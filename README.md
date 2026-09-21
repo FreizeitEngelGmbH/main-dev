@@ -1,15 +1,18 @@
-# FreizeitEngel (Landing Page + Admin Panel + Partner Panel)
+# FreizeitEngel (Landing Page + Admin Panel + Partner Demo)
 
 One static frontend with three areas, running against an in-memory mock API
-(no backend and no API calls; only the Inter web font is fetched), with the seam already in
-place to swap that mock for the real API later without touching any page.
+(no backend, no API calls), with the seam already in place to swap the admin
+mock for the real API later without touching any page.
 
 | Area | Routes | Who |
 |---|---|---|
 | Landing Page | `/` (`/landing` redirects here) | everyone |
 | Login | `/auth` | everyone |
 | Admin Panel | `/admin/*` (35 routes) | role `admin` |
-| Partner Panel | `/partner`, `/partner/bookings`, `/partner/experiences`, `/partner/availability`, `/partner/payouts`, `/partner/messages`, `/partner/profile` | role `partner` |
+| Partner Demo (protected) | `/partner/dashboard`, `/partner/inquiries`, `/partner/group-activities`, `/partner/group-activities/:id`, `/partner/scanner` | role `partner` |
+| Partner Demo (public) | `/partner` (pitch + application), `/partners/:id` (shop), `/home`, `/bundles`, `/gruppen-events`, `/gruppen-events/:key` | everyone |
+
+Any other URL redirects to `/` (as in the Partner Demo); unknown `/admin/*` URLs show the 404 page.
 
 ## Running it
 
@@ -24,7 +27,7 @@ deliberately different from anything in the source project):
 | Role | Username | Password | Opens |
 |---|---|---|---|
 | Admin | `admin` | `demo1234` | `/admin` |
-| Partner | `partner` | `demo1234` | `/partner` (Kletterhalle Vertical Dortmund) |
+| Partner | `demo-partner` | `demo1234` | `/partner/dashboard` (Kletterhalle Vertical Dortmund) |
 
 `npm run build` / `npm run check` (`tsc --noEmit`) both pass.
 
@@ -37,11 +40,11 @@ Landing Page → **Anmelden** → `/auth` → role detection → dashboard → *
   the user to `homeForRole(role)` (`src/lib/auth-routing.ts`).
 - `src/lib/protected-route.tsx` guards every `/admin/*` and `/partner/*`
   route: signed out → `/auth`; signed in with the wrong role → own dashboard
-  (an admin opening `/partner/...` lands on `/admin`, a partner opening
-  `/admin/...` lands on `/partner`).
-- Logout (sidebar on desktop, account menu on mobile for partners; the
-  existing sidebar/sheet button for admins) clears the session and returns to
-  `/auth`.
+  (an admin opening a partner-only route lands on `/admin`, a partner opening
+  `/admin/...` lands on `/partner/dashboard`).
+- Logout (the sidebar/sheet button for admins, the **Konto → Abmelden** menu in
+  the Partner Demo header) clears the session; on a protected page the user is
+  sent to `/auth`.
 - Accounts created through the **Registrieren** tab have role `user`. There is
   no customer area in this build, so they are sent to the Landing Page and
   cannot open admin or partner routes.
@@ -49,35 +52,42 @@ Landing Page → **Anmelden** → `/auth` → role detection → dashboard → *
   `/api/logout` handlers with the real endpoints (see the mock → real API
   section); nothing in the UI needs to change.
 
-## Partner Panel
+## Partner Demo
 
-Reused from the standalone Partner demo (`Documents/demo`), kept
-self-contained in `src/partner/`:
+The Partner Demo (`Documents/demo`, package `zytt-partner-demo`) is merged in
+as verbatim copies of its screens and components at the same relative paths
+(`src/pages/partner-*.tsx`, `src/components/partner/*`, `src/components/layout/{header,footer,main-layout}.tsx`,
+`src/contexts`, `src/data`, `src/hooks/use-favorites.tsx`, `src/lib/*` helpers). The
+demo's `/`, `/landing` and `/auth` are not used: the unified app keeps its own Landing
+Page and login, and shares the demo's identical `use-auth`, `use-toast`, `index.css`
+and shadcn primitives.
 
 ```
-src/partner/
-  PartnerApp.tsx          router shell (wouter) + data provider + layout
-  routes.ts               single source of truth for /partner/* paths
-  partner-theme.css       Partner design tokens, scoped to <html class="partner-theme">
-  components/layout/      PartnerLayout (sidebar, mobile bottom bar, account menu, logout)
-  components/ui/          the 8 lightweight primitives the Partner pages use
-  context/                local-state data provider (booking/experience/message/profile edits)
-  mock-data/              static German mock data + types
-  pages/                  Dashboard, Bookings, Experiences, Availability, Payouts, Messages, Profile
+src/partner-demo/
+  PartnerDemoApp.tsx   the demo's route table + providers (last route in App.tsx)
+  queryClient.ts       the demo's static mock backend (in-memory, no network)
+  demo-data.ts         the demo's static German mock data
 ```
 
-Why the Partner UI primitives are not merged into `src/components/ui`: they
-share names with the admin shadcn components (`button`, `badge`, `select`, ...)
-but have different APIs (e.g. a native `<select>` vs Radix) and different
-spacing/radius, so swapping them would change either panel's look. Shared
-pieces that were identical are reused instead (`cn`, the router, auth, toasts,
-the dropdown menu in the mobile account menu).
+Why the demo has its own data layer instead of registering in `src/mocks`: it
+uses paths such as `/api/partners`, `/api/experiences`, `/api/categories` and
+`/api/cities` with different data shapes than the admin panel's mock API, so
+sharing one router would change what the admin screens show. `PartnerDemoApp`
+therefore mounts its own `QueryClientProvider`; the login session stays in the
+unified app (localStorage) and the demo partner user comes from
+`DEMO_CREDENTIALS` / `demoUser` in `demo-data.ts`.
 
-The Partner tokens (purple, `--radius: 0.75rem`, Inter) are applied only while
-the Partner layout is mounted, so the admin panel, login and landing page keep
-their own tokens. Partner edits (confirm a booking, toggle an experience, reply
-to a message, edit the profile) live in React state and reset on page reload,
-by design.
+Edits made in the demo (new groups, inquiry replies, check-ins, cart) live in
+memory and reset on reload, by design. Two hero images on the public shop page
+(`partners/:id`) are Unsplash links inside `demo-data.ts`, so they need internet
+access; nothing else leaves the browser.
+
+Changes to the copied demo files are limited to: import paths (`@/lib/queryClient`
+→ `@/partner-demo/queryClient`, `@/lib/demo-data` → `@/partner-demo/demo-data`), an
+added `password`/`profileImage` on `demoUser` (to satisfy the shared `User` type),
+`insertPartnerSchema` added to `shared/schema.ts`, and four class-only responsive
+fixes (`flex-wrap` / `min-w-0` on the partner dashboard, inquiries and shop pages),
+which also overflowed horizontally in the standalone demo.
 
 ## What's here vs. what isn't
 
@@ -85,16 +95,16 @@ by design.
   `src/pages/auth-page.tsx` — copied byte-for-byte from the source project.
   Not one line of UI/JSX was edited.
 - `src/components/ui/*` — the full shadcn "new-york" component set, copied
-  verbatim, minus 5 files that are customer-site-only widgets with zero
-  admin usage (`experience-card`, `category-card`, `header-search`,
-  `search-box`, `star-rating` — see the audit notes below).
+  verbatim, minus customer-site-only widgets with zero admin usage
+  (`category-card`, `header-search`, `star-rating`; `experience-card` and
+  `search-box` came back with the Partner Demo, which uses them).
 - `src/index.css`, `tailwind.config.ts`, `components.json` — identical
   design tokens to the source project (same color/radius/font variables).
 - `src/pages/landing-page.tsx` is the source project's landing page, plus one
   addition: an **Anmelden** link in the header. Its footer links (`/impressum`,
   `/datenschutz`, `/agb`) point at pages that are not part of this build and
-  show the 404 page. The customer shop (home, search, checkout, ...) is not
-  included.
+  redirect to `/`. The customer shop (search, checkout, ...) is not included; the
+  Partner Demo's public pages are.
 - No `server/`, no database, no `drizzle-orm` — nothing here needs a
   backend to run.
 

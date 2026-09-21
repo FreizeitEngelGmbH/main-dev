@@ -1,6 +1,6 @@
 import { registerMock, MockApiError } from "../mockEngine";
 import { User } from "@shared/schema";
-import { partnerProfile } from "@/partner/mock-data/data";
+import { DEMO_CREDENTIALS as PARTNER_DEMO_CREDENTIALS, demoUser as DEMO_PARTNER } from "@/partner-demo/demo-data";
 
 /**
  * Mock session store. Demo credentials are deliberately NOT the same as any
@@ -23,27 +23,16 @@ const DEMO_ADMIN: User = {
   createdAt: new Date("2024-01-01").toISOString(),
 };
 
-const DEMO_PARTNER: User = {
-  id: 2,
-  username: "partner",
-  password: "",
-  email: partnerProfile.email,
-  fullName: partnerProfile.contactPerson,
-  profileImage: null,
-  role: "partner",
-  createdAt: new Date("2025-03-14").toISOString(),
-};
-
 const DEMO_PASSWORD = "demo1234";
 
 export const DEMO_CREDENTIALS = {
   admin: { username: DEMO_ADMIN.username, password: DEMO_PASSWORD },
-  partner: { username: DEMO_PARTNER.username, password: DEMO_PASSWORD },
+  partner: PARTNER_DEMO_CREDENTIALS,
 };
 
 const demoAccounts = [
   { user: DEMO_ADMIN, password: DEMO_PASSWORD },
-  { user: DEMO_PARTNER, password: DEMO_PASSWORD },
+  { user: DEMO_PARTNER, password: PARTNER_DEMO_CREDENTIALS.password },
 ];
 
 // Accounts created through the Registrieren tab (customer role, no dashboard).

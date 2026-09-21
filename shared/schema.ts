@@ -481,6 +481,18 @@ export const insertUserSchema = z.object({
   fullName: z.string(),
 });
 
+export const insertPartnerSchema = z.object({
+  companyName: z.string().min(1, { message: "Firmenname wird benötigt" }),
+  category: z.string().min(1, { message: "Kategorie wird benötigt" }),
+  city: z.string().min(1, { message: "Stadt wird benötigt" }),
+  location: z.string().min(1, { message: "Adresse wird benötigt" }),
+  website: z.string().optional().or(z.literal("")),
+  contactPerson: z.string().min(1, { message: "Ansprechpartner wird benötigt" }),
+  email: z.string().email({ message: "Ungültige E-Mail-Adresse" }),
+  phone: z.string().optional().or(z.literal("")),
+  description: z.string().min(1, { message: "Beschreibung wird benötigt" }),
+});
+
 export const insertExperienceSchema = z.object({
   title: z.string(),
   description: z.string(),

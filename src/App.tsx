@@ -46,15 +46,19 @@ import AdminRegiondo from "@/pages/admin/admin-regiondo";
 import AdminEversport from "@/pages/admin/admin-eversport";
 import AdminPlanyo from "@/pages/admin/admin-planyo";
 import AdminPretix from "@/pages/admin/admin-pretix";
-import PartnerApp from "@/partner/PartnerApp";
+import PartnerDemoApp from "@/partner-demo/PartnerDemoApp";
 
 import { ProtectedRoute } from "./lib/protected-route";
 
 /**
  * One app, three areas:
  *  - public:  `/` (landing page), `/auth` (login)
- *  - admin:   `/admin/*`   — `requiredRole="admin"`, paths/layout as in the source project
- *  - partner: `/partner/*` — `requiredRole="partner"`, handled by `PartnerApp`
+ *  - admin:   `/admin/*` — `requiredRole="admin"`, paths/layout as in the source project
+ *  - partner: the Partner Demo (`PartnerDemoApp`): `/partner` (pitch + application),
+ *             `/partner/dashboard|inquiries|group-activities[/:id]|scanner`
+ *             (`requiredRole="partner"`), plus its public pages (`/home`, `/partners/:id`,
+ *             `/bundles`, `/gruppen-events[/:key]`). It is the last route, so any
+ *             unmatched URL lands in its fallback (redirect to `/`).
  * `ProtectedRoute` sends signed-out users to `/auth` and users with the wrong
  * role to their own dashboard (`lib/auth-routing.ts`).
  */
@@ -204,9 +208,9 @@ function Router() {
       <ProtectedRoute path="/admin/integration-architecture" component={IntegrationArchitecture} requiredRole="admin" />
       <ProtectedRoute path="/admin/voice-agent" component={AdminVoiceAgent} requiredRole="admin" />
 
-      <ProtectedRoute path="/partner/*?" component={PartnerApp} requiredRole="partner" />
-
-      <Route component={() => <NotFound />} />
+      {/* Unknown admin URLs keep the 404 page; everything else falls through to the Partner Demo. */}
+      <Route path="/admin/*" component={NotFound} />
+      <Route component={PartnerDemoApp} />
     </Switch>
   );
 }
