@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "wouter";
+import { env } from "@/config/env";
 
 // Login schema
 const loginSchema = z.object({
@@ -43,6 +44,10 @@ export default function AuthPage() {
   
   const searchParams = new URLSearchParams(location.split("?")[1]);
   const initialMode = searchParams.get("mode") as "login" | "register" | null;
+  const requestedPath = searchParams.get("next");
+  const safeRequestedPath = requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+    ? requestedPath
+    : null;
   
   useEffect(() => {
     // Initialize mode from URL parameter if available
@@ -54,9 +59,9 @@ export default function AuthPage() {
   // Once signed in, open the dashboard that belongs to the user's role
   useEffect(() => {
     if (user) {
-      navigate(homeForRole(user.role), { replace: true });
+      navigate(safeRequestedPath ?? homeForRole(user.role), { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, safeRequestedPath]);
   
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -94,7 +99,6 @@ export default function AuthPage() {
       email: data.email,
       fullName: data.fullName,
       password: data.password,
-      confirmPassword: data.confirmPassword,
     });
   };
 
@@ -220,6 +224,33 @@ export default function AuthPage() {
                   >
                     {loginMutation.isPending ? "Wird angemeldet..." : "Anmelden"}
                   </Button>
+
+                  {env.useMockApi && (
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={loginMutation.isPending}
+                        onClick={() => loginMutation.mutate({
+                          username: "admin-demo",
+                          password: "local-admin-demo",
+                        })}
+                      >
+                        Admin-Demo
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={loginMutation.isPending}
+                        onClick={() => loginMutation.mutate({
+                          username: "partner-demo",
+                          password: "local-partner-demo",
+                        })}
+                      >
+                        Partner-Demo
+                      </Button>
+                    </div>
+                  )}
                 </form>
               </Form>
             </TabsContent>

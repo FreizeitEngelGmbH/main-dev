@@ -17,14 +17,6 @@ import PartnerShop from "@/pages/partner-shop";
 import EventCategoryPage from "@/pages/event-category-page";
 import BundlesListPage from "@/pages/bundles-page";
 
-function DemoBanner() {
-  return (
-    <div className="bg-amber-500 text-amber-950 text-center text-xs sm:text-sm font-semibold py-1.5 px-4">
-      Partner-Demo — lokale Beispieldaten, keine echte Verbindung zum FreizeitEngel-System
-    </div>
-  );
-}
-
 /**
  * The Partner Demo: its screens, routes and static mock data, mounted inside the
  * unified app. Everything under it reads from its own in-memory data layer
@@ -42,7 +34,6 @@ export default function PartnerDemoApp() {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <ScrollToTop />
-        <DemoBanner />
         <Switch>
           <Route
             path="/home"
@@ -69,7 +60,7 @@ export default function PartnerDemoApp() {
                 <PartnerDashboard />
               </MainLayout>
             )}
-            requiredRole="partner"
+            allowedRoles={["partner", "admin"]}
           />
 
           <ProtectedRoute
@@ -79,7 +70,7 @@ export default function PartnerDemoApp() {
                 <PartnerInquiries />
               </MainLayout>
             )}
-            requiredRole="partner"
+            allowedRoles={["partner", "admin"]}
           />
 
           <ProtectedRoute
@@ -89,7 +80,7 @@ export default function PartnerDemoApp() {
                 <PartnerGroupActivitiesPage />
               </MainLayout>
             )}
-            requiredRole="partner"
+            allowedRoles={["partner", "admin"]}
           />
 
           <ProtectedRoute
@@ -99,13 +90,13 @@ export default function PartnerDemoApp() {
                 <PartnerGroupActivityDetailPage />
               </MainLayout>
             )}
-            requiredRole="partner"
+            allowedRoles={["partner", "admin"]}
           />
 
           <ProtectedRoute
             path="/partner/scanner"
             component={() => <PartnerScanner />}
-            requiredRole="partner"
+            allowedRoles={["partner", "admin"]}
           />
 
           <Route

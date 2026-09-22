@@ -1,4 +1,8 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { apiClient } from "@/api/client";
+import { apiConfig } from "@/api/config";
+import type { HttpMethod } from "@/api/types";
+import type { MockResponse } from "@/mocks/mockEngine";
 import {
   demoPartnerProfile,
   demoPartnerStats,
@@ -29,10 +33,9 @@ import {
  * speak paths like `/api/partners` and `/api/experiences` but return
  * differently shaped data.
  *
- * Login/session is NOT handled here. The unified app owns it
- * (`src/mocks/domains/auth.ts` + `src/hooks/use-auth.tsx`, session in
- * localStorage), and the demo partner account's user comes from
- * `DEMO_CREDENTIALS` / `demoUser` in ./demo-data.
+ * Login/session is NOT handled here. The unified app restores the real
+ * backend session through GET /api/user and never persists auth state in
+ * browser storage.
  *
  * No fetch(), axios, XMLHttpRequest, WebSocket or EventSource is used. Every
  * response is built in memory from ./demo-data and wrapped in a native
@@ -107,7 +110,14 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown
-): Promise<Response> {
+): Promise<Response | MockResponse> {
+  if (!apiConfig.useMockApi) {
+    return apiClient.raw(url, {
+      method: method.toUpperCase() as HttpMethod,
+      body: data,
+    });
+  }
+
   await delay();
 
   // --- Partner application form (partner-page.tsx) ---
@@ -283,7 +293,11 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401 }) =>
-  async ({ queryKey }) => {
+  async ({ queryKey, signal }) => {
+    if (!apiConfig.useMockApi) {
+      return apiClient.request<any>(queryKey[0] as string, { signal });
+    }
+
     await delay(250);
     const url = queryKey[0] as string;
 

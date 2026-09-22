@@ -1,8 +1,10 @@
 # FreizeitEngel (Landing Page + Admin Panel + Partner Demo)
 
-One static frontend with three areas, running against an in-memory mock API
-(no backend, no API calls), with the seam already in place to swap the admin
-mock for the real API later without touching any page.
+One web frontend with public, partner, and admin areas. By default it uses the
+real session-based backend through same-origin `/api/*` requests. The legacy
+in-memory content mocks remain available only when `VITE_USE_MOCK_API=true`;
+authentication uses temporary in-memory demo accounts in mock mode and is
+never persisted in browser storage.
 
 | Area | Routes | Who |
 |---|---|---|
@@ -21,13 +23,11 @@ npm install
 npm run dev      # http://localhost:5050
 ```
 
-Demo logins (shown nowhere in the UI on purpose — they are demo credentials,
-deliberately different from anything in the source project):
+Set `VITE_API_BASE_URL` only when the API is on a different origin. Leave it
+empty for same-origin deployment. No secret belongs in a `VITE_*` variable.
 
-| Role | Username | Password | Opens |
-|---|---|---|---|
-| Admin | `admin` | `demo1234` | `/admin` |
-| Partner | `demo-partner` | `demo1234` | `/partner/dashboard` (Kletterhalle Vertical Dortmund) |
+With `VITE_USE_MOCK_API=true`, the login screen provides **Admin-Demo** and
+**Partner-Demo** buttons. These temporary sessions reset on page reload.
 
 `npm run build` / `npm run check` (`tsc --noEmit`) both pass.
 
@@ -35,22 +35,20 @@ deliberately different from anything in the source project):
 
 Landing Page → **Anmelden** → `/auth` → role detection → dashboard → **Abmelden**.
 
-- The mock session (`localStorage` key `fe-mock-session`, see
-  `src/mocks/domains/auth.ts`) carries the user's `role`. The login page sends
-  the user to `homeForRole(role)` (`src/lib/auth-routing.ts`).
+- `GET /api/user` is the sole session bootstrap. The browser sends the
+  backend-managed `connect.sid` cookie with `credentials: "include"`; no token
+  or authoritative user is stored in localStorage/sessionStorage.
 - `src/lib/protected-route.tsx` guards every `/admin/*` and `/partner/*`
-  route: signed out → `/auth`; signed in with the wrong role → own dashboard
-  (an admin opening a partner-only route lands on `/admin`, a partner opening
-  `/admin/...` lands on `/partner/dashboard`).
+  route: signed out → `/auth?next=...`; admin routes require `admin`; partner
+  dashboard routes accept `partner` or `admin`.
 - Logout (the sidebar/sheet button for admins, the **Konto → Abmelden** menu in
   the Partner Demo header) clears the session; on a protected page the user is
   sent to `/auth`.
 - Accounts created through the **Registrieren** tab have role `user`. There is
   no customer area in this build, so they are sent to the Landing Page and
   cannot open admin or partner routes.
-- To connect real auth later, replace the `/api/user`, `/api/login`,
-  `/api/logout` handlers with the real endpoints (see the mock → real API
-  section); nothing in the UI needs to change.
+- Login, registration, and logout use `/api/login`, `/api/register`, and
+  `/api/logout`, then synchronize the authoritative `/api/user` query.
 
 ## Partner Demo
 
@@ -73,21 +71,16 @@ Why the demo has its own data layer instead of registering in `src/mocks`: it
 uses paths such as `/api/partners`, `/api/experiences`, `/api/categories` and
 `/api/cities` with different data shapes than the admin panel's mock API, so
 sharing one router would change what the admin screens show. `PartnerDemoApp`
-therefore mounts its own `QueryClientProvider`; the login session stays in the
-unified app (localStorage) and the demo partner user comes from
-`DEMO_CREDENTIALS` / `demoUser` in `demo-data.ts`.
+therefore mounts its own `QueryClientProvider` in mock mode. Authentication
+always stays in the root session query and is never supplied by demo data.
 
 Edits made in the demo (new groups, inquiry replies, check-ins, cart) live in
 memory and reset on reload, by design. Two hero images on the public shop page
 (`partners/:id`) are Unsplash links inside `demo-data.ts`, so they need internet
 access; nothing else leaves the browser.
 
-Changes to the copied demo files are limited to: import paths (`@/lib/queryClient`
-→ `@/partner-demo/queryClient`, `@/lib/demo-data` → `@/partner-demo/demo-data`), an
-added `password`/`profileImage` on `demoUser` (to satisfy the shared `User` type),
-`insertPartnerSchema` added to `shared/schema.ts`, and four class-only responsive
-fixes (`flex-wrap` / `min-w-0` on the partner dashboard, inquiries and shop pages),
-which also overflowed horizontally in the standalone demo.
+The partner transport delegates to the centralized real API client when mocks
+are disabled. In-memory partner datasets remain isolated to explicit mock mode.
 
 ## What's here vs. what isn't
 
@@ -105,10 +98,16 @@ which also overflowed horizontally in the standalone demo.
   `/datenschutz`, `/agb`) point at pages that are not part of this build and
   redirect to `/`. The customer shop (search, checkout, ...) is not included; the
   Partner Demo's public pages are.
-- No `server/`, no database, no `drizzle-orm` — nothing here needs a
-  backend to run.
+- No `server/`, session configuration, CORS configuration, or database code is
+  included in this checkout. Protected and authenticated flows require the
+  existing backend.
 
-## The mock → real API architecture
+## API architecture
+
+See [`docs/API_ARCHITECTURE.md`](docs/API_ARCHITECTURE.md) for the session,
+client, domain module, deployment, migration, and backend-gap details.
+
+## Legacy compatibility
 
 Every admin page still calls the exact same URL it always did
 (`useQuery({ queryKey: ["/api/admin/partners"] })`,
@@ -129,8 +128,9 @@ src/mocks/registerAll.ts      imports every domain file once, for its
                                side effects
 ```
 
-`src/config/env.ts`'s `useMockApi` flag is the single switch. Turn it off
-(`VITE_USE_MOCK_API=false` + `VITE_API_BASE_URL=https://...`) and every
+`src/config/env.ts`'s `useMockApi` flag is the single switch. It defaults to
+real API mode; with `VITE_USE_MOCK_API=false` and an optional
+`VITE_API_BASE_URL=https://...`, every
 `apiRequest`/`getQueryFn`/intercepted `fetch()` call goes to a real server
 at that base URL instead — using the exact same paths, so a real backend
 just needs to serve them. See `src/mocks/domains/*.ts` for the literal
@@ -161,8 +161,8 @@ schema client-side code should read.
 - Two production security findings surfaced while auditing the source
   project's `server/routes.ts` — unrelated to this extraction, but worth
   fixing there regardless: an unauthenticated `POST /api/promote-to-admin`
-  endpoint, and a hardcoded `admin`/`admin123` login backdoor in
-  `server/auth.ts`. Several admin API modules (Knowledge Base, Payments
+  endpoint, and a hardcoded administrative login bypass in `server/auth.ts`.
+  Several admin API modules (Knowledge Base, Payments
   settings, Documents, HR, Onboarding, Meetings, Support viewer,
   Accounting) also have no server-side auth check at all on the real
   backend — see the full audit for the line-by-line list.

@@ -1,4 +1,3 @@
-import type { User } from "@shared/schema";
 import bowlingImg from "@assets/images/bowling.png"; // DEMO: substituted for missing real stock photo
 import minigolfImg from "@assets/images/minigolf.png"; // DEMO: substituted for missing real stock photo
 import kinoImg from "@assets/images/kino.png"; // DEMO: substituted for missing real stock photo
@@ -12,22 +11,6 @@ import dortmundBundleImg from "@assets/bundles/dortmund-family-paket.jpg";
  * (BookingWithDetails, PartnerStats, PartnerProfile, Settlement) exactly, so
  * that file required zero modification to consume this data.
  */
-
-export const DEMO_CREDENTIALS = {
-  username: "demo-partner",
-  password: "demo1234",
-};
-
-export const demoUser: User = {
-  id: 9001,
-  username: "demo-partner",
-  password: "",
-  email: "sabine.hoffmann@vertical-dortmund.de",
-  fullName: "Sabine Hoffmann",
-  profileImage: null,
-  role: "partner",
-  createdAt: new Date().toISOString(),
-};
 
 export const demoPartnerProfile = {
   id: 501,

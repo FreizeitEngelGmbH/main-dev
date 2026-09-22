@@ -1,14 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { env } from "@/config/env";
-import { mockFetch } from "@/mocks/mockEngine";
-import "@/mocks/registerAll";
-
-async function throwIfResNotOk(res: Response | Awaited<ReturnType<typeof mockFetch>>) {
-  if (!res.ok) {
-    const text = (await res.text()) || String(res.status);
-    throw new Error(`${res.status}: ${text}`);
-  }
-}
+import { apiClient } from "@/api/client";
+import { isApiError } from "@/api/errors";
+import type { HttpMethod } from "@/api/types";
 
 /**
  * Same signature as the source project's `apiRequest` — every admin page
@@ -16,38 +9,26 @@ async function throwIfResNotOk(res: Response | Awaited<ReturnType<typeof mockFet
  * `fetch` depending on `env.useMockApi`, so nothing above this layer knows
  * or cares which one is answering.
  */
-export async function apiRequest(method: string, url: string, data?: unknown | undefined) {
-  if (env.useMockApi) {
-    const res = await mockFetch(method, url, data);
-    await throwIfResNotOk(res);
-    return res;
-  }
-
-  const res = await fetch(`${env.apiBaseUrl}${url}`, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+export async function apiRequest(method: string, url: string, data?: unknown) {
+  return apiClient.raw(url, {
+    method: method.toUpperCase() as HttpMethod,
+    body: data,
   });
-  await throwIfResNotOk(res);
-  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: { on401: UnauthorizedBehavior }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
+  async ({ queryKey, signal }) => {
     const url = queryKey[0] as string;
-    const res = env.useMockApi
-      ? await mockFetch("GET", url)
-      : await fetch(`${env.apiBaseUrl}${url}`, { credentials: "include" });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    try {
+      return await apiClient.request<any>(url, { signal });
+    } catch (error) {
+      if (unauthorizedBehavior === "returnNull" && isApiError(error) && error.status === 401) {
+        return null as any;
+      }
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({

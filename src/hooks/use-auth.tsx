@@ -1,110 +1,71 @@
-import { createContext, ReactNode, useContext } from "react";
-import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { insertUserSchema, User } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
+import { useMutation, useQuery, type UseMutationResult } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
+import { queryKeys } from "@/api/queryKeys";
+import { authUserQueryOptions } from "@/auth/auth.queries";
+import { loginAndRestore, logoutAndClear, registerAndRestore } from "@/auth/auth.mutations";
+import type { AuthUser, LoginRequest, RegisterRequest } from "@/auth/auth.types";
+import { onUnauthorized } from "@/api/sessionEvents";
+import { clearProtectedQueryData } from "@/auth/auth.mutations";
+import { queryClient as partnerQueryClient } from "@/partner-demo/queryClient";
 
 type AuthContextType = {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<User, Error, LoginData>;
+  loginMutation: UseMutationResult<AuthUser, Error, LoginRequest>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<User, Error, RegisterData>;
+  registerMutation: UseMutationResult<AuthUser, Error, RegisterRequest>;
 };
-
-type LoginData = {
-  username: string;
-  password: string;
-};
-
-// Extend the insert schema for registration form
-const registerSchema = insertUserSchema.extend({
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type RegisterData = z.infer<typeof registerSchema>;
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery<User | null, Error>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
+  const { data: user, error, isLoading } = useQuery(authUserQueryOptions);
 
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
-    },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
+  useEffect(() => onUnauthorized(() => {
+    clearProtectedQueryData(queryClient);
+    clearProtectedQueryData(partnerQueryClient);
+    queryClient.setQueryData(queryKeys.auth.user, null);
+  }), []);
+
+  const loginMutation = useMutation<AuthUser, Error, LoginRequest>({
+    mutationFn: loginAndRestore,
+    onSuccess: (authenticatedUser) => {
+      queryClient.setQueryData(queryKeys.auth.user, authenticatedUser);
       toast({
         title: "Login erfolgreich",
-        description: `Willkommen zurück, ${user.fullName}!`,
+        description: `Willkommen zurück, ${authenticatedUser.fullName}!`,
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Login fehlgeschlagen",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (mutationError) => {
+      toast({ title: "Login fehlgeschlagen", description: mutationError.message, variant: "destructive" });
     },
   });
 
-  const registerMutation = useMutation({
-    mutationFn: async (userData: RegisterData) => {
-      const res = await apiRequest("POST", "/api/register", userData);
-      return await res.json();
-    },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
+  const registerMutation = useMutation<AuthUser, Error, RegisterRequest>({
+    mutationFn: registerAndRestore,
+    onSuccess: (authenticatedUser) => {
+      queryClient.setQueryData(queryKeys.auth.user, authenticatedUser);
       toast({
         title: "Registrierung erfolgreich",
-        description: `Willkommen bei AdventureDACH, ${user.fullName}!`,
+        description: `Willkommen bei FreizeitEngel, ${authenticatedUser.fullName}!`,
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Registrierung fehlgeschlagen",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (mutationError) => {
+      toast({ title: "Registrierung fehlgeschlagen", description: mutationError.message, variant: "destructive" });
     },
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
-    },
+  const logoutMutation = useMutation<void, Error, void>({
+    mutationFn: () => logoutAndClear(queryClient, [partnerQueryClient]),
     onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
-      toast({
-        title: "Abmeldung erfolgreich",
-        description: "Du wurdest erfolgreich abgemeldet.",
-      });
+      toast({ title: "Abmeldung erfolgreich", description: "Du wurdest erfolgreich abgemeldet." });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Abmeldung fehlgeschlagen",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (mutationError) => {
+      toast({ title: "Abmeldung fehlgeschlagen", description: mutationError.message, variant: "destructive" });
     },
   });
 
@@ -113,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user: user ?? null,
         isLoading,
-        error,
+        error: error ?? null,
         loginMutation,
         logoutMutation,
         registerMutation,
@@ -126,8 +87,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

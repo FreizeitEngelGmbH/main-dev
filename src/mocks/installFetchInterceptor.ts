@@ -1,5 +1,6 @@
 import { mockFetch } from "./mockEngine";
 import { env } from "@/config/env";
+import { notifyUnauthorized } from "@/api/sessionEvents";
 
 /**
  * Several copied admin pages (admin-apm.tsx, admin-documents.tsx,
@@ -19,8 +20,20 @@ const realFetch = window.fetch.bind(window);
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
-  if (!env.useMockApi || !url.startsWith("/api")) {
+  if (!url.startsWith("/api")) {
     return realFetch(input, init);
+  }
+
+  // Compatibility for legacy page-level fetch calls: even before each page is
+  // migrated to apiClient, relative API requests honor the configured backend
+  // and always participate in the cookie session.
+  if (!env.useMockApi) {
+    const response = await realFetch(`${env.apiBaseUrl.replace(/\/$/, "")}${url}`, {
+      ...init,
+      credentials: "include",
+    });
+    if (response.status === 401) notifyUnauthorized(url.split("?")[0]);
+    return response;
   }
 
   const method = init?.method ?? "GET";
