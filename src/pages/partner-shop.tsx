@@ -15,8 +15,8 @@ import {
 import { useCart } from "@/contexts/cart-context";
 import { useToast } from "@/hooks/use-toast";
 import GroupInquiryForm from "@/components/GroupInquiryForm";
-import { demoShopPartners, demoShopExperiences } from "@/partner-demo/demo-data";
-import { partnerIdExists, DEFAULT_ACTIVITY_PARTNER_ID } from "@/lib/activity-route-resolver";
+import { FAQChatbot } from "@/components/faq-chatbot";
+import { shopPartners, shopExperiences } from "@/partner/data";
 
 /**
  * Public partner storefront ("Shop ansehen" from the Partner Dashboard).
@@ -24,9 +24,9 @@ import { partnerIdExists, DEFAULT_ACTIVITY_PARTNER_ID } from "@/lib/activity-rou
  * partner-shop-page.tsx: hero, trust strip, ticket grid, group-inquiry
  * form, reviews, location & contact and the FAQ/newsletter/footer block.
  * Backed by local mock data instead of GET /api/partners/:id and
- * GET /api/experiences - the "Buchen" actions add to the existing demo
+ * GET /api/experiences - the "Buchen" actions add to the existing static
  * cart instead of opening the real app's full booking/payment dialogs,
- * which are out of scope for this demo.
+ * which are out of scope for this static build.
  */
 export default function PartnerShop() {
   const { id: rawId } = useParams();
@@ -34,13 +34,10 @@ export default function PartnerShop() {
   const { addToCart } = useCart();
   const { toast } = useToast();
 
-  // This demo only has fully working shop data for a handful of partner
-  // ids (demoShopPartners). Any other/unknown id (a stale link, a typo,
-  // a card whose real id has no matching shop) falls back to the Bowling
-  // shop instead of showing a dead "not found" screen - see
-  // src/lib/activity-route-resolver.ts for the click-site version of the
-  // same fallback.
-  const id = partnerIdExists(rawId) ? String(rawId) : String(DEFAULT_ACTIVITY_PARTNER_ID);
+  // Unknown ids show the page's own "Partner nicht gefunden" state, as in the
+  // source app. Links inside the app resolve to existing shops beforehand
+  // (see src/lib/activity-route-resolver.ts).
+  const id = String(rawId ?? "");
 
   const { data: partner, isLoading: partnerLoading } = useQuery<any>({
     queryKey: [`/api/partners/${id}`],
@@ -298,7 +295,7 @@ export default function PartnerShop() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
         <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-8">Standort & Kontakt</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Static map card (no live map tiles in the demo) */}
+          {/* Static map card (no live map tiles in the static build) */}
           <div className="md:col-span-2 relative bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 rounded-2xl overflow-hidden shadow-lg min-h-[350px] flex flex-col items-center justify-center border border-gray-100">
             <div
               className="absolute inset-0 opacity-[0.12]"
@@ -421,6 +418,23 @@ export default function PartnerShop() {
 
       {/* Cross-Selling: Andere Aktivitäten in der Stadt (+ FAQ, Newsletter, Footer) */}
       {partner && <CityRecommendations currentPartnerId={Number(id)} city={partner.city} />}
+
+      {/* Local FAQ chatbot: predefined answers from this page's own static partner/offer data (no AI, no API). */}
+      {partner && (
+        <FAQChatbot
+          partner={{
+            id: partner.id,
+            company_name: partner.companyName,
+            address: [partner.address, [partner.postalCode, partner.city].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+            phone: partner.phone,
+            email: partner.email,
+            website: partner.website,
+            opening_hours: chatbotOpeningHours(partner.openingHours),
+            category: partner.category,
+          }}
+          experiences={experiences.map((e) => ({ id: e.id, title: e.title, price: Number(e.price), description: e.description }))}
+        />
+      )}
     </div>
   );
 }
@@ -513,6 +527,21 @@ function getCategoryIcon(experience: any) {
   if (category.includes("fitness") || category.includes("sport")) return <Dumbbell className="h-10 w-10" />;
   if (category.includes("park") || category.includes("natur")) return <TreePine className="h-10 w-10" />;
   return <Ticket className="h-10 w-10" />;
+}
+
+// Opening hours as text for the FAQ chatbot, using the same German day labels as <OpeningHours />.
+function chatbotOpeningHours(openingHoursJson?: string): string | undefined {
+  if (!openingHoursJson) return undefined;
+  try {
+    const parsed: Record<string, string> = JSON.parse(openingHoursJson);
+    const labels: Array<[string, string]> = [
+      ["monday", "Montag"], ["tuesday", "Dienstag"], ["wednesday", "Mittwoch"], ["thursday", "Donnerstag"],
+      ["friday", "Freitag"], ["saturday", "Samstag"], ["sunday", "Sonntag"],
+    ];
+    return labels.filter(([key]) => parsed[key]).map(([key, label]) => `${label}: ${parsed[key]} Uhr`).join("\n");
+  } catch {
+    return undefined;
+  }
 }
 
 function formatTodayHours(openingHoursJson?: string) {
@@ -764,10 +793,10 @@ function PartnerReviews({ partnerName }: { partnerName: string }) {
 
 function CityRecommendations({ currentPartnerId, city }: { currentPartnerId: number; city: string }) {
   const [, setLocation] = useLocation();
-  const displayPartners = demoShopPartners.filter((p) => p.city === city && p.id !== currentPartnerId).slice(0, 6);
+  const displayPartners = shopPartners.filter((p) => p.city === city && p.id !== currentPartnerId).slice(0, 6);
 
   const getMinPrice = (partnerId: number) => {
-    const partnerExps = demoShopExperiences.filter((e) => e.partnerId === partnerId);
+    const partnerExps = shopExperiences.filter((e) => e.partnerId === partnerId);
     if (partnerExps.length === 0) return null;
     return Math.min(...partnerExps.map((e) => Number(e.price)));
   };

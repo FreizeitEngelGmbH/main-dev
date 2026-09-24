@@ -114,7 +114,7 @@ export default function AdminPayments() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payments/accounts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payments/transactions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payments/payouts"] });
-      toast({ title: "Demo-Daten erstellt" });
+      toast({ title: "Beispieldaten erstellt" });
     },
   });
 
@@ -231,7 +231,7 @@ export default function AdminPayments() {
                   disabled={seedMutation.isPending}
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
-                  {seedMutation.isPending ? "Wird geladen..." : "Demo-Daten"}
+                  {seedMutation.isPending ? "Wird geladen..." : "Beispieldaten"}
                 </Button>
               )}
             </div>

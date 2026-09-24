@@ -34,7 +34,7 @@ import {
   Edit,
   X
 } from "lucide-react";
-import { apiRequest, queryClient } from "@/partner-demo/queryClient";
+import { apiRequest, queryClient } from "@/partner/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface Category {

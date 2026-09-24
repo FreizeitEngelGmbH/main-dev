@@ -120,10 +120,10 @@ function SettlementsTab() {
   });
 
   const handleCsvDownload = (monthId: string) => {
-    // DEMO: real file opens a real CSV export API route here. No backend
-    // exists in this demo, so avoid attempting that navigation at all.
+    // STATIC: real file opens a real CSV export API route here. No backend
+    // exists in this static build, so avoid attempting that navigation at all.
     void monthId;
-    window.alert("CSV-Export ist in der Partner-Demo simuliert (keine echte Datei).");
+    window.alert("CSV-Export ist noch nicht verfügbar.");
   };
 
   const handleFullCsvDownload = () => {
@@ -732,14 +732,14 @@ export default function PartnerDashboard() {
                         <p className="text-sm font-medium text-gray-700 mb-2">Letzte Buchungen diesen Monat</p>
                         <div className="space-y-2">
                           {currentSettlement.bookings.slice(0, 3).map((b) => (
-                            <div key={b.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg text-sm">
-                              <div className="flex items-center gap-3">
+                            <div key={b.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 px-3 bg-gray-50 rounded-lg text-sm">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0">
                                 <span className="text-gray-400 text-xs">#{b.id}</span>
                                 <span className="font-medium text-gray-800">{b.experienceTitle}</span>
                                 <span className="text-gray-400">·</span>
                                 <span className="text-gray-500">{b.customerName}</span>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-3 ml-auto shrink-0">
                                 <span className="text-gray-500">{new Date(b.date).toLocaleDateString('de-DE')}</span>
                                 <span className="font-semibold text-green-600">{b.net.toFixed(2).replace('.', ',')} €</span>
                               </div>

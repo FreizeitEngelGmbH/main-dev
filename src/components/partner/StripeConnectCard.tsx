@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/partner-demo/queryClient";
+import { apiRequest } from "@/partner/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,14 +26,14 @@ export default function StripeConnectCard() {
       return res.json();
     },
     onSuccess: (data: { url?: string }) => {
-      // DEMO: real file opens a real Stripe onboarding URL here. The mocked
+      // STATIC: real file opens a real Stripe onboarding URL here. The mocked
       // apiRequest never returns a real url, so guard explicitly rather than
       // rely on window.open(undefined, ...) being harmless by accident.
       if (data?.url) {
         const win = window.open(data.url, "_blank", "noopener");
         if (!win) window.location.href = data.url;
       } else {
-        toast({ title: "Demo-Modus", description: "Stripe-Anbindung wird in der Demo simuliert." });
+        toast({ title: "Nicht verfügbar", description: "Die Stripe-Verbindung ist noch nicht verfügbar." });
       }
     },
     onError: (err: any) => {

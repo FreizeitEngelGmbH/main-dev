@@ -4,14 +4,14 @@ import { DmFolder, DmFile } from "@shared/schema";
 import { daysAgo } from "../data/core";
 
 const folders = createStore<DmFolder>([
-  { id: 1, name: "Verträge", parentId: null, color: "#6366f1", icon: "folder", createdBy: "Admin Demo", createdAt: daysAgo(100), updatedAt: daysAgo(100) },
-  { id: 2, name: "Partner-Verträge 2025", parentId: 1, color: "#6366f1", icon: "folder", createdBy: "Admin Demo", createdAt: daysAgo(60), updatedAt: daysAgo(60) },
-  { id: 3, name: "Marketing", parentId: null, color: "#22c55e", icon: "folder", createdBy: "Admin Demo", createdAt: daysAgo(90), updatedAt: daysAgo(90) },
+  { id: 1, name: "Verträge", parentId: null, color: "#6366f1", icon: "folder", createdBy: "Admin", createdAt: daysAgo(100), updatedAt: daysAgo(100) },
+  { id: 2, name: "Partner-Verträge 2025", parentId: 1, color: "#6366f1", icon: "folder", createdBy: "Admin", createdAt: daysAgo(60), updatedAt: daysAgo(60) },
+  { id: 3, name: "Marketing", parentId: null, color: "#22c55e", icon: "folder", createdBy: "Admin", createdAt: daysAgo(90), updatedAt: daysAgo(90) },
 ]);
 
 const files = createStore<DmFile>([
-  { id: 1, name: "Partnervertrag_Bowlorado.pdf", folderId: 2, mimeType: "application/pdf", size: 245678, data: "", tags: ["Vertrag"], starred: true, description: null, uploadedBy: "Admin Demo", createdAt: daysAgo(55), updatedAt: daysAgo(55) },
-  { id: 2, name: "Mediakit_2025.pdf", folderId: 3, mimeType: "application/pdf", size: 1245678, data: "", tags: ["Marketing"], starred: false, description: null, uploadedBy: "Admin Demo", createdAt: daysAgo(30), updatedAt: daysAgo(30) },
+  { id: 1, name: "Partnervertrag_Bowlorado.pdf", folderId: 2, mimeType: "application/pdf", size: 245678, data: "", tags: ["Vertrag"], starred: true, description: null, uploadedBy: "Admin", createdAt: daysAgo(55), updatedAt: daysAgo(55) },
+  { id: 2, name: "Mediakit_2025.pdf", folderId: 3, mimeType: "application/pdf", size: 1245678, data: "", tags: ["Marketing"], starred: false, description: null, uploadedBy: "Admin", createdAt: daysAgo(30), updatedAt: daysAgo(30) },
 ]);
 
 function breadcrumbFor(folderId: number | null): DmFolder[] {
@@ -45,8 +45,8 @@ registerMock("GET", "/api/admin/documents/stats", () => ({
   starredCount: files.list().filter((f) => f.starred).length,
 }));
 
-registerMock("POST", "/api/admin/documents/folders", (_p, _q, body) => folders.create({ color: "#6366f1", icon: "folder", createdBy: "Admin Demo", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(body as object) } as Partial<DmFolder>));
-registerMock("POST", "/api/admin/documents/files", (_p, _q, body) => files.create({ starred: false, uploadedBy: "Admin Demo", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(body as object) } as Partial<DmFile>));
+registerMock("POST", "/api/admin/documents/folders", (_p, _q, body) => folders.create({ color: "#6366f1", icon: "folder", createdBy: "Admin", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(body as object) } as Partial<DmFolder>));
+registerMock("POST", "/api/admin/documents/files", (_p, _q, body) => files.create({ starred: false, uploadedBy: "Admin", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(body as object) } as Partial<DmFile>));
 registerMock("DELETE", "/api/admin/documents/files/:id", (p) => { files.remove(Number(p.id)); return { success: true }; });
 registerMock("DELETE", "/api/admin/documents/folders/:id", (p) => { folders.remove(Number(p.id)); return { success: true }; });
 registerMock("PATCH", "/api/admin/documents/files/:id", (p, _q, body) => files.update(Number(p.id), { ...(body as object), updatedAt: new Date().toISOString() } as never));

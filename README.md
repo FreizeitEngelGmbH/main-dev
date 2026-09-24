@@ -1,20 +1,21 @@
-# FreizeitEngel (Landing Page + Admin Panel + Partner Demo)
+# FreizeitEngel (Landing Page + Admin Panel + Partner App)
 
 One web frontend with public, partner, and admin areas. By default it uses the
 real session-based backend through same-origin `/api/*` requests. The legacy
 in-memory content mocks remain available only when `VITE_USE_MOCK_API=true`;
-authentication uses temporary in-memory demo accounts in mock mode and is
+authentication uses temporary in-memory local accounts in mock mode and is
 never persisted in browser storage.
 
 | Area | Routes | Who |
 |---|---|---|
-| Landing Page | `/` (`/landing` redirects here) | everyone |
+| Start | `/` redirects to `/home` | everyone |
+| Landing Page | `/landing` | everyone |
 | Login | `/auth` | everyone |
 | Admin Panel | `/admin/*` (35 routes) | role `admin` |
-| Partner Demo (protected) | `/partner/dashboard`, `/partner/inquiries`, `/partner/group-activities`, `/partner/group-activities/:id`, `/partner/scanner` | role `partner` |
-| Partner Demo (public) | `/partner` (pitch + application), `/partners/:id` (shop), `/home`, `/bundles`, `/gruppen-events`, `/gruppen-events/:key` | everyone |
+| Partner (protected) | `/partner/dashboard`, `/partner/inquiries`, `/partner/group-activities`, `/partner/group-activities/:id`, `/partner/scanner` | role `partner` |
+| Partner (public) | `/partner` (pitch + application), `/partners/:id` (shop), `/home`, `/bundles`, `/gruppen-events`, `/gruppen-events/:key`, `/gruppen`, `/gruppen/:id` (static group pages), `/bundles/:slug`, `/search`, `/brands`, `/about`, `/faq`, `/lexikon`, `/favorites`, `/profile` and `/community` ("not available yet" pages), legal pages `/datenschutz` (= `/privacy`), `/terms` (= `/agb`), `/imprint` (= `/impressum`) | everyone |
 
-Any other URL redirects to `/` (as in the Partner Demo); unknown `/admin/*` URLs show the 404 page.
+Any other URL redirects to `/` and from there to `/home`; unknown `/admin/*` URLs show the 404 page.
 
 ## Running it
 
@@ -26,8 +27,8 @@ npm run dev      # http://localhost:5050
 Set `VITE_API_BASE_URL` only when the API is on a different origin. Leave it
 empty for same-origin deployment. No secret belongs in a `VITE_*` variable.
 
-With `VITE_USE_MOCK_API=true`, the login screen provides **Admin-Demo** and
-**Partner-Demo** buttons. These temporary sessions reset on page reload.
+With `VITE_USE_MOCK_API=true`, the login screen provides **Admin** and
+**Partner** buttons. These temporary sessions reset on page reload.
 
 `npm run build` / `npm run check` (`tsc --noEmit`) both pass.
 
@@ -42,7 +43,7 @@ Landing Page → **Anmelden** → `/auth` → role detection → dashboard → *
   route: signed out → `/auth?next=...`; admin routes require `admin`; partner
   dashboard routes accept `partner` or `admin`.
 - Logout (the sidebar/sheet button for admins, the **Konto → Abmelden** menu in
-  the Partner Demo header) clears the session; on a protected page the user is
+  the Partner header) clears the session; on a protected page the user is
   sent to `/auth`.
 - Accounts created through the **Registrieren** tab have role `user`. There is
   no customer area in this build, so they are sent to the Landing Page and
@@ -50,33 +51,33 @@ Landing Page → **Anmelden** → `/auth` → role detection → dashboard → *
 - Login, registration, and logout use `/api/login`, `/api/register`, and
   `/api/logout`, then synchronize the authoritative `/api/user` query.
 
-## Partner Demo
+## Partner app
 
-The Partner Demo (`Documents/demo`, package `zytt-partner-demo`) is merged in
+The Partner app (originally a separate standalone project) is merged in
 as verbatim copies of its screens and components at the same relative paths
 (`src/pages/partner-*.tsx`, `src/components/partner/*`, `src/components/layout/{header,footer,main-layout}.tsx`,
 `src/contexts`, `src/data`, `src/hooks/use-favorites.tsx`, `src/lib/*` helpers). The
-demo's `/`, `/landing` and `/auth` are not used: the unified app keeps its own Landing
-Page and login, and shares the demo's identical `use-auth`, `use-toast`, `index.css`
+original app's `/`, `/landing` and `/auth` are not used: the unified app keeps its own Landing
+Page and login, and shares the original app's identical `use-auth`, `use-toast`, `index.css`
 and shadcn primitives.
 
 ```
-src/partner-demo/
-  PartnerDemoApp.tsx   the demo's route table + providers (last route in App.tsx)
-  queryClient.ts       the demo's static mock backend (in-memory, no network)
-  demo-data.ts         the demo's static German mock data
+src/partner/
+  PartnerApp.tsx       the Partner route table + providers (last route in App.tsx)
+  queryClient.ts       the Partner static mock backend (in-memory, no network)
+  data.ts              the Partner static German mock data
 ```
 
-Why the demo has its own data layer instead of registering in `src/mocks`: it
+Why the Partner app has its own data layer instead of registering in `src/mocks`: it
 uses paths such as `/api/partners`, `/api/experiences`, `/api/categories` and
 `/api/cities` with different data shapes than the admin panel's mock API, so
-sharing one router would change what the admin screens show. `PartnerDemoApp`
+sharing one router would change what the admin screens show. `PartnerApp`
 therefore mounts its own `QueryClientProvider` in mock mode. Authentication
-always stays in the root session query and is never supplied by demo data.
+always stays in the root session query and is never supplied by static data.
 
-Edits made in the demo (new groups, inquiry replies, check-ins, cart) live in
+Edits made in the Partner app (new groups, inquiry replies, check-ins, cart) live in
 memory and reset on reload, by design. Two hero images on the public shop page
-(`partners/:id`) are Unsplash links inside `demo-data.ts`, so they need internet
+(`partners/:id`) are Unsplash links inside `src/partner/data.ts`, so they need internet
 access; nothing else leaves the browser.
 
 The partner transport delegates to the centralized real API client when mocks
@@ -90,14 +91,14 @@ are disabled. In-memory partner datasets remain isolated to explicit mock mode.
 - `src/components/ui/*` — the full shadcn "new-york" component set, copied
   verbatim, minus customer-site-only widgets with zero admin usage
   (`category-card`, `header-search`, `star-rating`; `experience-card` and
-  `search-box` came back with the Partner Demo, which uses them).
+  `search-box` came back with the Partner app, which uses them).
 - `src/index.css`, `tailwind.config.ts`, `components.json` — identical
   design tokens to the source project (same color/radius/font variables).
 - `src/pages/landing-page.tsx` is the source project's landing page, plus one
-  addition: an **Anmelden** link in the header. Its footer links (`/impressum`,
-  `/datenschutz`, `/agb`) point at pages that are not part of this build and
-  redirect to `/`. The customer shop (search, checkout, ...) is not included; the
-  Partner Demo's public pages are.
+  addition: an **Anmelden** link in the header. Its footer links `/impressum`,
+  `/datenschutz` and `/agb` open the imprint, privacy and terms pages. Search
+  (`/search`) runs on the static offer list; checkout and the customer profile
+  are not included. The Partner app's public pages are.
 - No `server/`, session configuration, CORS configuration, or database code is
   included in this checkout. Protected and authenticated flows require the
   existing backend.
@@ -172,7 +173,7 @@ schema client-side code should read.
 - Native browser push/WebSocket: `admin-chat.tsx`'s `new WebSocket(...)`
   has nothing to connect to in this standalone app — it fails silently and
   the page's own 5-second polling fallback (already in the source file)
-  covers the demo instead.
+  covers it instead.
 - File uploads in Document Manager / HR profile photos accept a selection
   but don't persist actual file bytes anywhere beyond the in-memory mock
   record — there's no storage backend to persist to yet.

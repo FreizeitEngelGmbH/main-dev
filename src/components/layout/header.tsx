@@ -68,7 +68,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/partner-demo/queryClient";
+import { apiRequest } from "@/partner/queryClient";
 import { resolveCategoryRoute } from "@/lib/activity-route-resolver";
 
 export function Header() {
@@ -86,10 +86,7 @@ export function Header() {
 
   const handleHeaderSearch = (query: string) => {
     if (query.trim()) {
-      // DEMO: no /search results page exists yet - route to the closest
-      // matching (or Bowling, as a last resort) working partner shop
-      // instead of a dead ?query= link.
-      setLocation(resolveCategoryRoute(query.trim()));
+      setLocation(`/search?query=${encodeURIComponent(query.trim())}`);
       setHeaderSearchQuery("");
       setIsOpen(false);
     }
@@ -212,12 +209,14 @@ export function Header() {
               </Link>
             </div>
 
-            <Button variant="ghost" size="sm" className="text-xs font-medium text-gray-700 hover:text-[hsl(258,80%,55%)] h-8 px-3 relative">
-              Favoriten
-              <Badge className="absolute -top-1 -right-1 bg-[hsl(258,80%,55%)] text-white text-xs px-1 py-0 rounded-full min-w-4 h-4 flex items-center justify-center">
-                0
-              </Badge>
-            </Button>
+            <Link href="/favorites">
+              <Button variant="ghost" size="sm" className="text-xs font-medium text-gray-700 hover:text-[hsl(258,80%,55%)] h-8 px-3 relative">
+                Favoriten
+                <Badge className="absolute -top-1 -right-1 bg-[hsl(258,80%,55%)] text-white text-xs px-1 py-0 rounded-full min-w-4 h-4 flex items-center justify-center">
+                  0
+                </Badge>
+              </Button>
+            </Link>
 
             {/* User Menu */}
             {user ? (
@@ -600,9 +599,6 @@ export function Header() {
                     <div className="border-t border-b border-gray-100 py-4 my-2">
                       <p className="text-xs uppercase font-semibold text-gray-500 mb-3">Kategorien</p>
                       <div className="flex flex-col space-y-3">
-                        {/* DEMO: no /search results page exists yet - route to the
-                            closest matching (or Bowling, as a last resort) working
-                            partner shop instead of a dead ?category= link. */}
                         <Link href={resolveCategoryRoute("Abenteuer & Sport")}
                           className="flex items-center text-sm font-medium text-gray-600"
                           onClick={() => setIsOpen(false)}
@@ -640,8 +636,6 @@ export function Header() {
                     <div className="border-b border-gray-100 pb-4 mb-2">
                       <p className="text-xs uppercase font-semibold text-gray-500 mb-3">Besondere Anlässe</p>
                       <div className="flex flex-col space-y-3">
-                        {/* DEMO: no /search results page exists yet - route to the
-                            working Bowling shop instead of a dead ?occasion=/?tag= link. */}
                         <Link href={resolveCategoryRoute("Geburtstag")}
                           className="flex items-center text-sm font-medium text-gray-600"
                           onClick={() => setIsOpen(false)}
@@ -1017,9 +1011,6 @@ function CategoryNav() {
                   </div>
                   <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuItem asChild>
-                    {/* DEMO: no /search results page exists yet - route to the
-                        closest matching (or Bowling, as a last resort) working
-                        partner shop instead of a dead ?category= link. */}
                     <Link href={resolveCategoryRoute(cat.label)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[hsl(258,80%,55%)] font-medium hover:bg-[hsl(258,80%,95%)] cursor-pointer">
                       <Compass className="h-3.5 w-3.5" />
                       Alle anzeigen

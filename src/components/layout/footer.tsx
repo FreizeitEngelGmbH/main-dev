@@ -70,10 +70,8 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Kategorien</h3>
             <ul className="space-y-2">
-              {/* DEMO: no /search results page exists yet - route to the
-                  working Bowling shop instead of a dead ?category= link,
-                  via a real SPA Link instead of a session-resetting
-                  window.location.href navigation. */}
+              {/* STATIC: SPA Links to the search results instead of the source's
+                  session-resetting window.location.href navigation. */}
               <li>
                 <Link href={resolveCategoryRoute("Outdoor & Abenteuer")} className="text-gray-400 hover:text-white transition">
                   Outdoor & Abenteuer
@@ -95,6 +93,7 @@ export function Footer() {
           {/* Contact */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Kontakt</h3>
+            {/* LEGAL-REVIEW: placeholder contact details (Berlin address, info@freizeitplus.de, phone) differ from the company details on /imprint, /datenschutz and /agb. Needs owner confirmation. */}
             <ul className="space-y-2">
               <li className="flex items-start">
                 <MapPin className="text-gray-400 mt-1 mr-3 h-4 w-4" />

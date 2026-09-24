@@ -11,4 +11,4 @@ registerIntegrationMock("planyo", [
   },
 ]);
 
-registerMock("POST", "/api/planyo/api-estimate", () => ({ estimatedCalls: 0, message: "Demo — keine echten API-Aufrufe." }));
+registerMock("POST", "/api/planyo/api-estimate", () => ({ estimatedCalls: 0, message: "Lokal — keine echten API-Aufrufe." }));

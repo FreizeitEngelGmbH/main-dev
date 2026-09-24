@@ -6,8 +6,8 @@ import { daysAgo } from "../data/core";
 const store = createStore<Meeting>([
   {
     id: 1, title: "Onboarding-Call: Trampolinpark Dortmund", description: "Vorstellung der Plattform", date: "2025-09-25",
-    startTime: "10:00", endTime: "10:30", duration: 30, type: "video", status: "geplant", roomId: "room-demo-1",
-    meetingUrl: "https://meet.demo/onboarding-1", organizer: "Admin Demo", participants: ["Nina Fischer"], notes: null,
+    startTime: "10:00", endTime: "10:30", duration: 30, type: "video", status: "geplant", roomId: "room-local-1",
+    meetingUrl: "https://meet.freizeitengel.test/onboarding-1", organizer: "Admin", participants: ["Nina Fischer"], notes: null,
     recurring: null, color: "#36C9C2", createdAt: daysAgo(5),
   },
 ]);

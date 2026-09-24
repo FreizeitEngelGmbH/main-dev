@@ -14,8 +14,8 @@ registerMock("GET", "/api/admin/materials", (_p, q) => {
   const category = q.get("category");
   return category ? store.list().filter((m) => m.category === category) : store.list();
 });
-registerMock("GET", "/api/admin/materials/:id/download", (p) => ({ url: `about:blank#material-${p.id}`, message: "Download ist im Demo-Modus simuliert." }));
-registerMock("GET", "/api/admin/materials/:id/html", (p) => ({ html: `<p>Vorschau für Material #${p.id} (Demo)</p>` }));
-registerMock("POST", "/api/admin/materials/seed", () => ({ imported: 0, message: "Demo-Daten sind bereits geladen." }));
+registerMock("GET", "/api/admin/materials/:id/download", (p) => ({ url: `about:blank#material-${p.id}`, message: "Download ist im lokalen Modus simuliert." }));
+registerMock("GET", "/api/admin/materials/:id/html", (p) => ({ html: `<p>Vorschau für Material #${p.id} (lokal)</p>` }));
+registerMock("POST", "/api/admin/materials/seed", () => ({ imported: 0, message: "Beispieldaten sind bereits geladen." }));
 registerMock("POST", "/api/admin/materials", (_p, _q, body) => store.create({ createdAt: new Date().toISOString(), ...(body as object) } as Partial<Material>));
 registerMock("DELETE", "/api/admin/materials/:id", (p) => { store.remove(Number(p.id)); return { success: true }; });

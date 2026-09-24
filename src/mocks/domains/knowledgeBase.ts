@@ -20,7 +20,7 @@ registerMock("GET", "/api/admin/kb/articles", (_p, q) => {
   const term = search.toLowerCase();
   return articles.list().filter((a) => a.title.toLowerCase().includes(term) || a.content.toLowerCase().includes(term));
 });
-registerMock("POST", "/api/admin/kb/seed", () => ({ imported: 0, message: "Demo-Daten sind bereits geladen." }));
+registerMock("POST", "/api/admin/kb/seed", () => ({ imported: 0, message: "Beispieldaten sind bereits geladen." }));
 registerMock("POST", "/api/admin/kb/articles", (_p, _q, body) => articles.create({ views: 0, published: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...(body as object) } as Partial<KbArticle>));
 registerMock("PATCH", "/api/admin/kb/articles/:id", (p, _q, body) => articles.update(Number(p.id), { ...(body as object), updatedAt: new Date().toISOString() } as never));
 registerMock("DELETE", "/api/admin/kb/articles/:id", (p) => { articles.remove(Number(p.id)); return { success: true }; });

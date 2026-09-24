@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient, getPartnerInquiryById } from "@/partner-demo/queryClient";
+import { apiRequest, queryClient, getPartnerInquiryById } from "@/partner/queryClient";
 import {
   Inbox, Mail, Phone, Calendar, Users, Clock, MessageSquare, Send, FileText,
   AlertCircle, CheckCircle2, XCircle, Trophy, Tag, Filter, ArrowLeft, Sparkles,
@@ -23,11 +23,11 @@ import {
   Search, MoreVertical, ChevronRight, Zap, Hourglass, FileSignature, ThumbsUp, ThumbsDown
 } from "lucide-react";
 
-// DEMO: this is the real, verbatim FreizeitEngel partner-inquiries.tsx from
+// STATIC: this is the real, verbatim FreizeitEngel partner-inquiries.tsx from
 // client/src/pages/partner/partner-inquiries.tsx, with exactly two changes -
 // both confined to how data is fetched, none to markup/structure/behavior:
 //   1. inquiriesQuery no longer has its own fetch()-based queryFn; it falls
-//      through to the mock getQueryFn already wired up in "@/partner-demo/queryClient".
+//      through to the mock getQueryFn already wired up in "@/partner/queryClient".
 //   2. InquiryDetailSheet's detail queryFn calls the local, synchronous
 //      getPartnerInquiryById() helper instead of fetch()-ing the API.
 // Every mutation (reply, status/priority/notes, templates CRUD) still goes

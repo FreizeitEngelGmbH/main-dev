@@ -36,7 +36,7 @@ registerMock("GET", "/api/admin/accounting/contacts", () => contacts.list());
 registerMock("GET", "/api/admin/accounting/expenses", () => expenses.list());
 registerMock("GET", "/api/admin/accounting/revenues", () => revenues.list());
 registerMock("GET", "/api/admin/accounting/tax-periods", () => taxPeriods.list());
-registerMock("POST", "/api/admin/accounting/seed", () => ({ imported: 0, message: "Demo-Daten sind bereits geladen." }));
+registerMock("POST", "/api/admin/accounting/seed", () => ({ imported: 0, message: "Beispieldaten sind bereits geladen." }));
 
 registerMock("POST", "/api/admin/accounting/invoices", (_p, _q, body) => invoices.create(body as Partial<AccountingInvoice>));
 registerMock("PATCH", "/api/admin/accounting/invoices/:id", (p, _q, body) => invoices.update(Number(p.id), body as never));

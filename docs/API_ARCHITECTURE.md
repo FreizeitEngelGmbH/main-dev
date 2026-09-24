@@ -49,14 +49,14 @@ header.
 
 ## Static-data migration
 
-Real API mode is now the default. The old admin content router and partner demo
+Real API mode is now the default. The old admin content router and partner static
 datasets remain available only with `VITE_USE_MOCK_API=true`; mock mode includes
 temporary in-memory Admin/Partner login buttons for local review. These sessions
 are never persisted and do not exist in real API mode. Some screens still contain
-presentation/demo data directly:
+presentation/static data directly:
 
 - home discovery groupings, partner shop/reviews, bundles and group events;
-- partner dashboard/inquiries/group activity demo records and local slot data;
+- partner dashboard/inquiries/group activity static records and local slot data;
 - landing-page marketing content and partner application marketing copy;
 - admin dashboard revenue chart, roadmap phases, and predefined mailing data;
 - the remaining admin modules backed by `src/mocks/domains/*` when mock mode is

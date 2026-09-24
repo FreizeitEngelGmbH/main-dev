@@ -1,12 +1,14 @@
-import { demoShopPartners } from "@/partner-demo/demo-data";
+import { shopPartners } from "@/partner/data";
 
 /**
- * This demo only has a handful of fully working partner shop pages
- * (the entries in demoShopPartners). Any activity/category/partner card
- * whose real id has no matching shop page resolves to the closest
- * category match, or to the Bowling shop as the final fallback -
- * never to a broken/unknown route. Swap this out once real detail
- * pages/APIs exist for every category.
+ * This static build only has a handful of fully working partner shop pages
+ * (the entries in shopPartners).
+ * - Category / free-text links go to the search page, as in the source app
+ *   (`/search?category=...`).
+ * - Partner cards use the partner's own shop page when it exists, else the
+ *   shop of the same category (climbing, bowling, escape room, cinema), else
+ *   the search results for the partner's category - never an unrelated shop
+ *   or a broken/unknown route. Swap this out once every partner has a page.
  */
 export const DEFAULT_ACTIVITY_PARTNER_ID = 502; // Bowling Arena Dortmund
 export const DEFAULT_ACTIVITY_DETAIL_ROUTE = `/partners/${DEFAULT_ACTIVITY_PARTNER_ID}`;
@@ -20,7 +22,7 @@ const CATEGORY_KEYWORDS: Array<[RegExp, number]> = [
 
 export function partnerIdExists(id: unknown): boolean {
   const n = Number(id);
-  return Number.isFinite(n) && demoShopPartners.some((p) => p.id === n);
+  return Number.isFinite(n) && shopPartners.some((p) => p.id === n);
 }
 
 /** Best-matching existing partner shop id for a free-text category/badge/label. */
@@ -32,15 +34,20 @@ export function resolveCategoryPartnerId(category?: string | null): number {
   return DEFAULT_ACTIVITY_PARTNER_ID;
 }
 
+/** Search results for a category or free-text label (source app: /search?category=...). */
 export function resolveCategoryRoute(category?: string | null): string {
-  return `/partners/${resolveCategoryPartnerId(category)}`;
+  const text = (category || "").trim();
+  return text ? `/search?category=${encodeURIComponent(text)}` : "/search";
 }
 
 /**
  * Route for a partner card: uses the real partner id when it has a working
- * shop page, otherwise falls back to the best category match (or Bowling).
+ * shop page, otherwise the shop of the same category, otherwise the search
+ * results for the partner's category.
  */
 export function resolvePartnerRoute(partnerId: unknown, category?: string | null): string {
   if (partnerIdExists(partnerId)) return `/partners/${Number(partnerId)}`;
-  return resolveCategoryRoute(category);
+  const text = category || "";
+  const match = CATEGORY_KEYWORDS.find(([pattern]) => pattern.test(text));
+  return match ? `/partners/${match[1]}` : resolveCategoryRoute(category);
 }

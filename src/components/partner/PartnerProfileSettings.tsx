@@ -18,7 +18,7 @@ import {
   Clock,
   ExternalLink
 } from "lucide-react";
-import { apiRequest, queryClient } from "@/partner-demo/queryClient";
+import { apiRequest, queryClient } from "@/partner/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 

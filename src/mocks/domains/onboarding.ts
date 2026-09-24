@@ -19,7 +19,7 @@ const store = createStore<PartnerOnboarding>(
     stepTesting: p.isLive, stepTestingDate: p.isLive ? daysAgo(230 - i * 10) : null, stepTestingNotes: null,
     stepGoLive: p.isLive, stepGoLiveDate: p.isLive ? daysAgo(220 - i * 10) : null, stepGoLiveNotes: null,
     overallStatus: p.isLive ? "live" : p.approved ? "in_bearbeitung" : "nicht_gestartet",
-    assignedTo: "Admin Demo", priority: "normal", createdAt: daysAgo(300 - i * 10), updatedAt: daysAgo(5),
+    assignedTo: "Admin", priority: "normal", createdAt: daysAgo(300 - i * 10), updatedAt: daysAgo(5),
   }))
 );
 

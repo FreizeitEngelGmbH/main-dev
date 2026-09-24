@@ -29,7 +29,7 @@ import {
   Briefcase,
   Target
 } from "lucide-react";
-import { apiRequest } from "@/partner-demo/queryClient";
+import { apiRequest } from "@/partner/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface GroupInquiryFormProps {

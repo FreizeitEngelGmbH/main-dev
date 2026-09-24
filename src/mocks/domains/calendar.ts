@@ -13,10 +13,10 @@ registerMock("GET", "/api/admin/calendar", () => store.list());
 registerMock("POST", "/api/admin/calendar", (_p, _q, body) => store.create(body as Partial<CalendarEvent>));
 registerMock("PATCH", "/api/admin/calendar/:id", (p, _q, body) => store.update(Number(p.id), body as never));
 registerMock("DELETE", "/api/admin/calendar/:id", (p) => { store.remove(Number(p.id)); return { success: true }; });
-registerMock("POST", "/api/admin/calendar/:eventId/sync-outlook", () => ({ success: true, synced: false, message: "Outlook-Sync ist im Demo-Modus deaktiviert." }));
+registerMock("POST", "/api/admin/calendar/:eventId/sync-outlook", () => ({ success: true, synced: false, message: "Outlook-Sync ist im lokalen Modus deaktiviert." }));
 
-// Outlook integration is intentionally inert in the demo — reports "not connected" rather than attempting a real OAuth flow.
+// Outlook integration is intentionally inert in local mode — reports "not connected" rather than attempting a real OAuth flow.
 registerMock("GET", "/api/admin/outlook/status", () => ({ connected: false }));
-registerMock("GET", "/api/admin/outlook/connect", () => ({ authUrl: null, message: "Outlook-Verbindung ist im Demo-Modus nicht verfügbar." }));
+registerMock("GET", "/api/admin/outlook/connect", () => ({ authUrl: null, message: "Outlook-Verbindung ist im lokalen Modus nicht verfügbar." }));
 registerMock("GET", "/api/admin/outlook/events", () => []);
-registerMock("POST", "/api/admin/outlook/import", () => ({ imported: 0, message: "Outlook-Import ist im Demo-Modus nicht verfügbar." }));
+registerMock("POST", "/api/admin/outlook/import", () => ({ imported: 0, message: "Outlook-Import ist im lokalen Modus nicht verfügbar." }));

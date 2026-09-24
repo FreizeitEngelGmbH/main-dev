@@ -5,7 +5,7 @@ const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString()
 const daysFromNow = (n: number) => new Date(Date.now() + n * 86400000).toISOString();
 
 export const usersSeed: User[] = [
-  { id: 1, username: "admin", password: "", email: "admin@freizeitengel.demo", fullName: "Admin Demo", profileImage: null, role: "admin", createdAt: daysAgo(400) },
+  { id: 1, username: "admin", password: "", email: "admin@freizeitengel.test", fullName: "Admin", profileImage: null, role: "admin", createdAt: daysAgo(400) },
   { id: 2, username: "mschmidt", password: "", email: "m.schmidt@bowlorado.de", fullName: "Markus Schmidt", profileImage: null, role: "partner", createdAt: daysAgo(300) },
   { id: 3, username: "lweber", password: "", email: "l.weber@kletterhalle-do.de", fullName: "Laura Weber", profileImage: null, role: "partner", createdAt: daysAgo(280) },
   { id: 4, username: "tmueller", password: "", email: "t.mueller@escaperoom-bo.de", fullName: "Tobias Müller", profileImage: null, role: "partner", createdAt: daysAgo(260) },
@@ -28,7 +28,7 @@ export const partnersSeed: Partner[] = [
     country: "Deutschland", category: "Bowling", description: "12-Bahnen Bowlingcenter mit Cocktailbar.", website: "https://bowlorado.de",
     foundedYear: 2012, status: "aktiv", approved: true, openingHours: "Mo-So 12:00-24:00", latitude: 51.5136, longitude: 7.4653,
     logoUrl: null, logoBgColor: "black", tourUrl: null, isLive: true, bookingSystem: "roller",
-    rollerClientId: "demo-client-id", rollerClientSecret: null, rollerVenueId: "venue-001", rollerEnvironment: "production",
+    rollerClientId: "local-client-id", rollerClientSecret: null, rollerVenueId: "venue-001", rollerEnvironment: "production",
     regiondoApiKey: null, regiondoSecretKey: null, regiondoSupplierId: null, regiondoEnvironment: "production",
     eversportApiToken: null, eversportVenueId: null, eversportEnvironment: "production",
     pretixApiToken: null, pretixOrganizerSlug: null, pretixEventSlug: null, pretixEnvironment: "production",
@@ -43,7 +43,7 @@ export const partnersSeed: Partner[] = [
     logoUrl: null, logoBgColor: "black", tourUrl: null, isLive: true, bookingSystem: "eversport",
     rollerClientId: null, rollerClientSecret: null, rollerVenueId: null, rollerEnvironment: "production",
     regiondoApiKey: null, regiondoSecretKey: null, regiondoSupplierId: null, regiondoEnvironment: "production",
-    eversportApiToken: "demo-token", eversportVenueId: "venue-002", eversportEnvironment: "production",
+    eversportApiToken: "local-token", eversportVenueId: "venue-002", eversportEnvironment: "production",
     pretixApiToken: null, pretixOrganizerSlug: null, pretixEventSlug: null, pretixEnvironment: "production",
     planyoApiKey: null, planyoHashKey: null, planyoSiteId: null, planyoEnvironment: "production",
     createdAt: daysAgo(280),
@@ -70,7 +70,7 @@ export const partnersSeed: Partner[] = [
     rollerClientId: null, rollerClientSecret: null, rollerVenueId: null, rollerEnvironment: "production",
     regiondoApiKey: null, regiondoSecretKey: null, regiondoSupplierId: null, regiondoEnvironment: "production",
     eversportApiToken: null, eversportVenueId: null, eversportEnvironment: "production",
-    pretixApiToken: "demo-token", pretixOrganizerSlug: "aquafun", pretixEventSlug: "tagesticket", pretixEnvironment: "production",
+    pretixApiToken: "local-token", pretixOrganizerSlug: "aquafun", pretixEventSlug: "tagesticket", pretixEnvironment: "production",
     planyoApiKey: null, planyoHashKey: null, planyoSiteId: null, planyoEnvironment: "production",
     createdAt: daysAgo(60),
   },
@@ -84,7 +84,7 @@ export const partnersSeed: Partner[] = [
     regiondoApiKey: null, regiondoSecretKey: null, regiondoSupplierId: null, regiondoEnvironment: "production",
     eversportApiToken: null, eversportVenueId: null, eversportEnvironment: "production",
     pretixApiToken: null, pretixOrganizerSlug: null, pretixEventSlug: null, pretixEnvironment: "production",
-    planyoApiKey: "demo-key", planyoHashKey: null, planyoSiteId: "site-005", planyoEnvironment: "production",
+    planyoApiKey: "local-key", planyoHashKey: null, planyoSiteId: "site-005", planyoEnvironment: "production",
     createdAt: daysAgo(30),
   },
 ];
@@ -128,7 +128,7 @@ export const bookingsSeed: Booking[] = Array.from({ length: 14 }).map((_, i) => 
     specialRequests: null,
     paymentMethod: i % 2 === 0 ? "stripe" : "paypal",
     paymentStatus: status === "cancelled" ? "refunded" : "paid",
-    paymentId: `pay_demo_${i}`,
+    paymentId: `pay_local_${i}`,
     stripePaymentIntentId: null,
     stripeChargeId: null,
     stripeTransferId: null,

@@ -185,8 +185,8 @@ export default function EventCategoryPage() {
                     {p.city}
                   </div>
 
-                  {/* DEMO: p.id is the real production partner id, which has
-                      no matching shop page in this demo - resolvePartnerRoute
+                  {/* STATIC: p.id is the real production partner id, which has
+                      no matching shop page in this static build - resolvePartnerRoute
                       sends it to the closest category match (or Bowling)
                       instead of a dead /partners/:id link. */}
                   <Link

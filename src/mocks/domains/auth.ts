@@ -8,26 +8,26 @@ import type { AuthUser } from "@/auth/auth.types";
  */
 const mockAccounts: Array<{ username: string; password: string; user: AuthUser }> = [
   {
-    username: "admin-demo",
-    password: "local-admin-demo",
+    username: "local-admin",
+    password: "local-admin-access",
     user: {
       id: 9001,
-      username: "admin-demo",
+      username: "local-admin",
       email: "admin@example.invalid",
-      fullName: "Admin Demo",
+      fullName: "Admin",
       profileImage: null,
       role: "admin",
       createdAt: "2026-01-01T00:00:00.000Z",
     },
   },
   {
-    username: "partner-demo",
-    password: "local-partner-demo",
+    username: "local-partner",
+    password: "local-partner-access",
     user: {
       id: 9002,
-      username: "partner-demo",
+      username: "local-partner",
       email: "partner@example.invalid",
-      fullName: "Partner Demo",
+      fullName: "Partner",
       profileImage: null,
       role: "partner",
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -46,7 +46,7 @@ registerMock("POST", "/api/login", (_params, _query, body) => {
   const account = mockAccounts.find(
     ({ username, password }) => username === credentials?.username && password === credentials?.password,
   );
-  if (!account) throw new MockApiError("Ungültiger Demo-Zugang.", 401);
+  if (!account) throw new MockApiError("Ungültiger lokaler Zugang.", 401);
   currentUser = account.user;
   return currentUser;
 });

@@ -1,6 +1,6 @@
 import { registerMock, MockApiError } from "./mockEngine";
 
-/** A minimal in-memory table: list/get/create/update/remove, id auto-increment. State lives only for the browser tab's lifetime (resets on reload) — this is a demo data layer, not persistence. */
+/** A minimal in-memory table: list/get/create/update/remove, id auto-increment. State lives only for the browser tab's lifetime (resets on reload) — this is a local data layer, not persistence. */
 export function createStore<T extends { id: number }>(seed: T[]) {
   let items: T[] = [...seed];
 

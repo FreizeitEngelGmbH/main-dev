@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/partner-demo/queryClient";
+import { queryClient, apiRequest } from "@/partner/queryClient";
 import { Calendar, Link2, Unlink, RefreshCw, CheckCircle2, XCircle, Loader2, Bell, BellOff, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,12 +96,12 @@ export default function GoogleCalendarConnect() {
   });
 
   const handleConnect = async () => {
-    // DEMO: real file called fetch("/api/google/auth") directly here,
+    // STATIC: real file called fetch("/api/google/auth") directly here,
     // bypassing the shared mocked queryClient, and would have opened a real
     // Google OAuth popup. Replaced with a simulated connect so this can
     // never issue a real network request or open a real external URL.
     try {
-      toast({ title: "Demo-Modus", description: "Google Calendar-Verbindung wird in der Demo simuliert." });
+      toast({ title: "Nicht verfügbar", description: "Die Google-Calendar-Verbindung ist noch nicht verfügbar." });
       setTimeout(() => refetchStatus(), 800);
     } catch {
       toast({ title: "Fehler", description: "Verbindung konnte nicht hergestellt werden", variant: "destructive" });

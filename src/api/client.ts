@@ -109,6 +109,17 @@ async function raw<TBody = unknown>(
 
   if (options.signal?.aborted) throw abortError();
   await assertOk(response, path);
+  // No backend behind /api/* (e.g. dev server SPA fallback) answers 200 with index.html;
+  // treat that as unreachable instead of handing HTML to callers expecting JSON.
+  if (response instanceof Response && (response.headers.get("content-type") ?? "").includes("text/html")) {
+    throw new ApiError({
+      status: 502,
+      message: `API not reachable: ${path} returned HTML`,
+      validationDetails: null,
+      responseInfo: { url: response.url || apiUrl(path), status: response.status, statusText: response.statusText, headers: responseHeaders(response) },
+      response,
+    });
+  }
   return response;
 }
 

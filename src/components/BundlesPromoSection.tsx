@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight, CheckCircle2, Gift, MapPin, Sparkles } from "lucide-react";
-import { DEFAULT_ACTIVITY_DETAIL_ROUTE } from "@/lib/activity-route-resolver";
 
 type Bundle = {
   id: number;
@@ -68,9 +67,7 @@ export default function BundlesPromoSection() {
             [1, 2, 3].map((i) => <Skeleton key={i} className="h-72 rounded-2xl bg-white/20" />)
           ) : (
             bundles!.slice(0, 3).map((b) => (
-              // DEMO: no bundle detail page/API exists yet - route to the
-              // working Bowling shop instead of a dead /bundles/:slug link.
-              <Link key={b.id} href={DEFAULT_ACTIVITY_DETAIL_ROUTE}>
+              <Link key={b.id} href={`/bundles/${b.slug}`}>
                 <Card className="overflow-hidden group cursor-pointer border-0 h-full flex flex-col text-gray-900 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all" data-testid={`card-home-bundle-${b.slug}`}>
                   <div className="relative h-44 overflow-hidden bg-gradient-to-br from-[#6C2BD9] to-[#3D1A78]">
                     {b.hero_image_url && (

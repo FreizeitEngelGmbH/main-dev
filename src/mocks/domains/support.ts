@@ -3,8 +3,8 @@ import { SupportConversation, SupportMessage } from "@shared/schema";
 import { daysAgo } from "../data/core";
 
 const conversations: SupportConversation[] = [
-  { id: 1, sessionId: "sess-demo-1", userId: null, visitorName: "Anonymer Besucher", visitorEmail: null, status: "closed", category: "Buchung", summary: "Frage zur Stornierung einer Bowling-Buchung.", satisfaction: 5, createdAt: daysAgo(4), updatedAt: daysAgo(4) },
-  { id: 2, sessionId: "sess-demo-2", userId: 5, visitorName: "Julia König", visitorEmail: "j.koenig@example.com", status: "active", category: "Partner", summary: null, satisfaction: null, createdAt: daysAgo(1), updatedAt: daysAgo(1) },
+  { id: 1, sessionId: "sess-local-1", userId: null, visitorName: "Anonymer Besucher", visitorEmail: null, status: "closed", category: "Buchung", summary: "Frage zur Stornierung einer Bowling-Buchung.", satisfaction: 5, createdAt: daysAgo(4), updatedAt: daysAgo(4) },
+  { id: 2, sessionId: "sess-local-2", userId: 5, visitorName: "Julia König", visitorEmail: "j.koenig@example.com", status: "active", category: "Partner", summary: null, satisfaction: null, createdAt: daysAgo(1), updatedAt: daysAgo(1) },
 ];
 
 const messages: SupportMessage[] = [

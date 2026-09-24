@@ -1,0 +1,1078 @@
+import { useParams, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Star, MapPin, Clock, Users, ShoppingCart, Plus, Minus, Search, Info, Truck, Timer } from "lucide-react";
+import SimpleBookingForm from "@/components/booking-systems/SimpleBookingForm";
+import { getActivityHeaderImage } from "@/components/ActivityHeaderImages";
+
+export default function PartnerShopLieferando() {
+  const { id } = useParams();
+  const [, setLocation] = useLocation();
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [cart, setCart] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("beliebte");
+
+  // Fetch experience data
+  const { data: experience, isLoading } = useQuery({
+    queryKey: [`/api/experiences/${id}`],
+    enabled: !!id
+  });
+
+  // Fetch partner experiences (multiple offers)
+  const { data: partnerExperiences, isLoading: partnerLoading } = useQuery({
+    queryKey: [`/api/experiences?partnerId=${experience?.partnerId}`],
+    enabled: !!experience?.partnerId
+  });
+
+  if (isLoading || partnerLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="animate-pulse">
+          <div className="h-64 bg-gray-200"></div>
+          <div className="container mx-auto px-4 py-8">
+            <div className="h-12 bg-gray-200 rounded mb-4"></div>
+            <div className="grid gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!experience) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Partner nicht gefunden</h2>
+          <Button onClick={() => setLocation('/')}>
+            Zurück zur Startseite
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Dynamische Angebote basierend auf Aktivitätstyp generieren
+  const partner = experience.partner;
+  const categoryName = experience.category?.name || 'Aktivität';
+  const activityType = categoryName.toLowerCase().includes('bowling') ? 'bowling' :
+                      categoryName.toLowerCase().includes('kino') ? 'cinema' :
+                      categoryName.toLowerCase().includes('schwimm') ? 'swimming' :
+                      categoryName.toLowerCase().includes('zoo') ? 'zoo' :
+                      categoryName.toLowerCase().includes('minigolf') ? 'minigolf' : 'default';
+
+  // Authentische Angebote für verschiedene Aktivitätstypen
+  const getAuthenticOffers = (partnerName: string, activityType: string) => {
+    switch(activityType) {
+      case 'cinema':
+        if (partnerName.includes('sweetSixteen')) {
+          return [
+            { id: 1001, title: 'Kinoticket sweetSixteen', description: 'Aktuelle Blockbuster in gemütlicher Atmosphäre mit bequemen Sitzen.', basePrice: 9.50, featured: true },
+            { id: 1002, title: 'Sneak Preview sweetSixteen', description: 'Überraschungsfilm vor dem offiziellen Kinostart.', basePrice: 8.00, featured: false },
+            { id: 1003, title: 'Pärchen-Abend sweetSixteen', description: 'Romantischer Kinoabend mit Popcorn und Getränken.', basePrice: 22.00, trending: true }
+          ];
+        }
+        if (partnerName.includes('Schauburg')) {
+          return [
+            { id: 1004, title: 'Traditionskino Schauburg', description: 'Filme seit 1912 in historischem Ambiente.', basePrice: 11.50, featured: true },
+            { id: 1005, title: 'Matinee Schauburg', description: 'Nachmittagsvorstellung zu reduzierten Preisen.', basePrice: 8.50, featured: false },
+            { id: 1006, title: 'Filmclub Schauburg', description: 'Exklusive Filmvorführungen für Cineasten.', basePrice: 13.50, trending: true }
+          ];
+        }
+        if (partnerName.includes('Bermuda')) {
+          return [
+            { id: 1007, title: 'Bermuda Filmpalast Ticket', description: 'Moderne Kinotechnik im Herzen von Bochum.', basePrice: 12.50, featured: true },
+            { id: 1008, title: 'Loge Bermuda', description: 'Premium-Plätze mit extra Komfort.', basePrice: 16.50, featured: false },
+            { id: 1009, title: 'Late-Night Show Bermuda', description: 'Spätvorstellungen für Nachtschwärmer.', basePrice: 10.50, trending: true }
+          ];
+        }
+        break;
+        
+      case 'bowling':
+        if (partnerName.includes('Bowltreff')) {
+          return [
+            { id: 2001, title: 'Bowling-Bahn Bowltreff', description: 'Professionelle Bahnen mit modernstem Equipment.', basePrice: 28.00, featured: true },
+            { id: 2002, title: 'Happy Hour Bowltreff', description: 'Vergünstigte Preise unter der Woche.', basePrice: 22.00, featured: false },
+            { id: 2003, title: 'Bowling-Party Bowltreff', description: 'Geburtstags- und Firmenfeier-Pakete.', basePrice: 89.00, trending: true }
+          ];
+        }
+        if (partnerName.includes('Bowlorado')) {
+          return [
+            { id: 2004, title: 'Bowlorado Witten Standard', description: 'Klassisches Bowling-Vergnügen in Witten.', basePrice: 25.00, featured: true },
+            { id: 2005, title: 'Cosmic Bowling Bowlorado', description: 'Bowling im Schwarzlicht mit Disco-Atmosphäre.', basePrice: 32.00, featured: false },
+            { id: 2006, title: 'Familien-Bowling Bowlorado', description: 'Spezielle Familienpakete am Wochenende.', basePrice: 75.00, trending: true }
+          ];
+        }
+        break;
+        
+      case 'swimming':
+        if (partnerName.includes('WasserWelten')) {
+          return [
+            { id: 3001, title: 'WasserWelten Tageskarte', description: 'Modernes Schwimmbad mit Wellness-Bereich.', basePrice: 12.50, featured: true },
+            { id: 3002, title: 'Sauna WasserWelten', description: 'Entspannung in der finnischen Sauna.', basePrice: 18.00, featured: false },
+            { id: 3003, title: 'Familien-Spa WasserWelten', description: 'Komplettpaket für die ganze Familie.', basePrice: 45.00, trending: true }
+          ];
+        }
+        if (partnerName.includes('Freibad Volkspark')) {
+          return [
+            { id: 3004, title: 'Freibad Volkspark Eintritt', description: 'Erfrischung im beliebten Freibad.', basePrice: 5.50, featured: true },
+            { id: 3005, title: 'Schwimmkurs Volkspark', description: 'Professionelle Schwimmkurse für alle Altersgruppen.', basePrice: 65.00, featured: false },
+            { id: 3006, title: 'Sommer-Dauerkarte Volkspark', description: 'Saison-Pass für unbegrenzten Zugang.', basePrice: 120.00, trending: true }
+          ];
+        }
+        if (partnerName.includes('Hallenbad')) {
+          return [
+            { id: 3007, title: 'Hallenbad Eintritt', description: 'Schwimmen bei jedem Wetter im Hallenbad.', basePrice: 6.50, featured: true },
+            { id: 3008, title: 'Aqua-Fitness', description: 'Gelenkschonendes Training im Wasser.', basePrice: 12.00, featured: false },
+            { id: 3009, title: 'Seniorenschwimmen', description: 'Spezielle Zeiten für ältere Badegäste.', basePrice: 4.50, trending: true }
+          ];
+        }
+        break;
+        
+      case 'zoo':
+        if (partnerName.includes('Kölner Zoo')) {
+          return [
+            { id: 4001, title: 'Kölner Zoo Tagesticket', description: 'Drittältester Zoo Deutschlands mit 500+ Tierarten.', basePrice: 22.50, featured: true },
+            { id: 4002, title: 'Führung Kölner Zoo', description: 'Exklusive Führung mit Tierpfleger.', basePrice: 8.00, featured: false },
+            { id: 4003, title: 'Jahrespass Kölner Zoo', description: 'Unbegrenzter Zugang für 365 Tage.', basePrice: 85.00, trending: true }
+          ];
+        }
+        if (partnerName.includes('Tiergarten Dortmund')) {
+          return [
+            { id: 4004, title: 'Tiergarten Dortmund Eintritt', description: 'Moderner Zoo mit Online-Ticketsystem.', basePrice: 16.50, featured: true },
+            { id: 4005, title: 'Kindergeburtstag Tiergarten', description: 'Unvergessliche Geburtstagsfeiern im Zoo.', basePrice: 45.00, featured: false },
+            { id: 4006, title: 'Nacht-Safari Dortmund', description: 'Erleben Sie den Zoo bei Mondschein.', basePrice: 28.00, trending: true }
+          ];
+        }
+        break;
+        
+      case 'minigolf':
+        if (partnerName.includes('Glowing Rooms')) {
+          return [
+            { id: 5001, title: '3D-Schwarzlicht Minigolf', description: 'Einzigartiges 3D-Erlebnis mit Spezialeffekten.', basePrice: 13.50, featured: true },
+            { id: 5002, title: 'Glow-Turnier', description: 'Wöchentliche Turniere mit Preisen.', basePrice: 16.00, featured: false },
+            { id: 5003, title: 'Geburtstags-Party Glow', description: 'Komplette Partypakete im Schwarzlicht.', basePrice: 120.00, trending: true }
+          ];
+        }
+        break;
+    }
+    
+    // Fallback für unbekannte Partner
+    return [
+      { id: 9001, title: `Standard-Angebot`, description: 'Klassisches Erlebnis für alle Altersgruppen.', basePrice: 15.00, featured: true },
+      { id: 9002, title: `Premium-Variante`, description: 'Gehobenes Angebot mit besonderen Extras.', basePrice: 25.00, featured: false },
+      { id: 9003, title: `Familien-Paket`, description: 'Speziell für Familien konzipiertes Angebot.', basePrice: 55.00, trending: true }
+    ];
+  };
+
+  const partnerName = experience?.partner?.companyName || experience?.title?.split(' ')[0] || 'Partner';
+  const offers = partnerExperiences?.length > 1 
+    ? partnerExperiences 
+    : getAuthenticOffers(partnerName, activityType);
+
+  // Group offers by categories
+  const categories = [
+    { id: 'beliebte', name: 'Beliebte', offers: offers.filter((o: any) => o.featured) },
+    { id: 'standard', name: 'Standard-Angebote', offers: offers.filter((o: any) => !o.featured && !o.trending) },
+    { id: 'specials', name: 'Spezial-Angebote', offers: offers.filter((o: any) => o.trending) },
+  ].filter(cat => cat.offers.length > 0);
+
+  const filteredOffers = offers.filter((offer: any) => 
+    offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    offer.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const addToCart = (offer: any) => {
+    const existingItem = cart.find(item => item.id === offer.id);
+    if (existingItem) {
+      setCart(cart.map(item => 
+        item.id === offer.id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { ...offer, quantity: 1 }]);
+    }
+  };
+
+  const removeFromCart = (offerId: number) => {
+    const existingItem = cart.find(item => item.id === offerId);
+    if (existingItem && existingItem.quantity > 1) {
+      setCart(cart.map(item => 
+        item.id === offerId 
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      ));
+    } else {
+      setCart(cart.filter(item => item.id !== offerId));
+    }
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const scrollToCategory = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    document.getElementById(`category-${categoryId}`)?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Moderner Split-Screen Hero Header */}
+      <div className="relative min-h-[500px] overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800">
+        {/* Geometrische Hintergrund-Formen */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-purple-600/20 to-transparent"></div>
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-purple-500/30 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute top-1/3 -left-12 w-64 h-64 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-2xl"></div>
+          
+          {/* Animierte Partikel */}
+          <div className="absolute inset-0">
+            {Array.from({length: 12}, (_, i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-6 py-12">
+          <div className="max-w-4xl mx-auto">
+            
+            {/* Linke Seite: Partner-Info */}
+            <div className="space-y-6">
+              {/* Breadcrumb */}
+              <nav className="flex items-center space-x-2 text-sm text-gray-300">
+                <span>FreizeitEngel</span>
+                <span>•</span>
+                <span className="text-purple-300">
+                  {activityType === 'bowling' ? 'Bowling' :
+                   activityType === 'cinema' ? 'Kino' :
+                   activityType === 'swimming' ? 'Schwimmen' :
+                   activityType === 'zoo' ? 'Zoo & Tierpark' :
+                   activityType === 'minigolf' ? 'Minigolf' :
+                   categoryName}
+                </span>
+              </nav>
+
+              {/* Partner-Name mit Animation */}
+              <div className="space-y-4">
+                <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+                  <span className="bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
+                    {partner?.companyName || experience?.partner?.companyName || experience?.title?.split(' bei ')[1] || 'FreizeitEngel Partner'}
+                  </span>
+                </h1>
+                
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1 bg-purple-500/20 border border-purple-400/30 rounded-full text-purple-200 text-sm font-medium">
+                    {activityType === 'bowling' ? 'Bowling Center' :
+                     activityType === 'cinema' ? 'Kino' :
+                     activityType === 'swimming' ? 'Schwimmbad' :
+                     activityType === 'zoo' ? 'Zoo & Tierpark' :
+                     activityType === 'minigolf' ? 'Minigolf' :
+                     'Freizeitanbieter'}
+                  </div>
+                  <div className="flex items-center gap-1 text-yellow-400">
+                    <Star className="w-4 h-4 fill-current" />
+                    <span className="text-white font-medium">{experience?.rating?.toFixed(1) || '4.7'}</span>
+                    <span className="text-gray-300 text-sm">({experience?.reviewCount || 33})</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Beschreibung */}
+              <p className="text-lg text-gray-300 leading-relaxed max-w-lg">
+                {partner?.description || 
+                 `Professionelle ${activityType === 'bowling' ? 'Bowling-' :
+                                  activityType === 'cinema' ? 'Kino-' :
+                                  activityType === 'swimming' ? 'Schwimm-' :
+                                  activityType === 'zoo' ? 'Tierpark-' :
+                                  activityType === 'minigolf' ? 'Minigolf-' : ''}Erlebnisse für pure Entspannung und unvergessliche Momente.`}
+              </p>
+
+              {/* Standort und Features */}
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <MapPin className="w-4 h-4 text-purple-400" />
+                  <span>{partner?.address?.split(',')[1]?.trim() || experience?.city || 'Bochum'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-green-400">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>Sofort buchbar</span>
+                </div>
+                <div className="flex items-center gap-2 text-blue-400">
+                  <div className="w-4 h-4 border border-blue-400 rounded text-xs flex items-center justify-center">i</div>
+                  <span>Keine Buchungsgebühren</span>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex gap-4 pt-4">
+                <button 
+                  onClick={() => scrollToCategory('angebote')}
+                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                >
+                  Angebote entdecken
+                </button>
+                <button className="px-6 py-3 border border-white/20 text-white hover:bg-white/10 rounded-lg transition-all duration-200">
+                  Kontakt
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+                            {/* Person 1 - Strike-Jubel */}
+                            <g transform="translate(0, 0)">
+                              <ellipse cx="0" cy="40" rx="12" ry="30" fill="#4a90e2" />
+                              <circle cx="0" cy="15" r="8" fill="#fdbcb4" />
+                              <circle cx="-3" cy="12" r="1" fill="#333" />
+                              <circle cx="3" cy="12" r="1" fill="#333" />
+                              <path d="M -4 18 Q 0 22 4 18" stroke="#333" strokeWidth="1" fill="none" />
+                              {/* Jubel-Arme */}
+                              <ellipse cx="-15" cy="25" rx="4" ry="15" fill="#fdbcb4" transform="rotate(-30)" />
+                              <ellipse cx="15" cy="25" rx="4" ry="15" fill="#fdbcb4" transform="rotate(30)" />
+                              <ellipse cx="-6" cy="70" rx="4" ry="15" fill="#2c3e50" />
+                              <ellipse cx="6" cy="70" rx="4" ry="15" fill="#2c3e50" />
+                            </g>
+                            
+                            {/* Person 2 - Bowling-Wurf */}
+                            <g transform="translate(50, 10)">
+                              <ellipse cx="0" cy="35" rx="10" ry="25" fill="#e74c3c" />
+                              <circle cx="0" cy="12" r="6" fill="#fdbcb4" />
+                              <circle cx="-2" cy="10" r="0.8" fill="#333" />
+                              <circle cx="2" cy="10" r="0.8" fill="#333" />
+                              <path d="M -3 14 Q 0 17 3 14" stroke="#333" strokeWidth="0.8" fill="none" />
+                              {/* Bowling-Bewegung */}
+                              <ellipse cx="12" cy="30" rx="3" ry="12" fill="#fdbcb4" transform="rotate(30)" />
+                              <ellipse cx="-8" cy="25" rx="3" ry="10" fill="#fdbcb4" />
+                              <circle cx="20" cy="40" r="4" fill="#1a1a1a" />
+                              <ellipse cx="-4" cy="60" rx="3" ry="12" fill="#2c3e50" />
+                              <ellipse cx="4" cy="60" rx="3" ry="12" fill="#2c3e50" />
+                            </g>
+                            
+                            {/* Person 3 - Anfeuern */}
+                            <g transform="translate(100, 5)">
+                              <ellipse cx="0" cy="30" rx="8" ry="20" fill="#9b59b6" />
+                              <circle cx="0" cy="10" r="5" fill="#fdbcb4" />
+                              <circle cx="-1.5" cy="8" r="0.6" fill="#333" />
+                              <circle cx="1.5" cy="8" r="0.6" fill="#333" />
+                              <path d="M -2.5 12 Q 0 15 2.5 12" stroke="#333" strokeWidth="0.6" fill="none" />
+                              <ellipse cx="-10" cy="20" rx="3" ry="8" fill="#fdbcb4" transform="rotate(-10)" />
+                              <ellipse cx="10" cy="20" rx="3" ry="8" fill="#fdbcb4" transform="rotate(10)" />
+                              <ellipse cx="-3" cy="50" rx="2.5" ry="9" fill="#2c3e50" />
+                              <ellipse cx="3" cy="50" rx="2.5" ry="9" fill="#2c3e50" />
+                            </g>
+                          </g>
+                          
+                          {/* Bowling-Pins */}
+                          <g transform="translate(240, 180)" opacity="0.8">
+                            <ellipse cx="0" cy="0" rx="3" ry="12" fill="#f8f9fa" />
+                            <ellipse cx="8" cy="-5" rx="3" ry="12" fill="#f8f9fa" transform="rotate(-15)" />
+                            <ellipse cx="16" cy="2" rx="3" ry="12" fill="#f8f9fa" transform="rotate(20)" />
+                          </g>
+                          
+                          {/* Jubel-Text */}
+                          <text x="160" y="50" textAnchor="middle" fill="#fff" fontSize="20" fontWeight="bold">STRIKE!</text>
+                        </svg>
+                      );
+                    }
+                    
+                    if (activityType === 'cinema') {
+                      return (
+                        <svg viewBox="0 0 320 280" className="w-full h-full">
+                          <defs>
+                            <linearGradient id="cinemaCardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#8b5cf6" />
+                              <stop offset="100%" stopColor="#7c3aed" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="320" height="280" fill="url(#cinemaCardBg)" />
+                          
+                          {/* Kino-Leinwand */}
+                          <rect x="40" y="30" width="240" height="120" rx="8" fill="#1a1a1a" stroke="#333" strokeWidth="2" />
+                          <rect x="50" y="35" width="220" height="110" fill="#ffffff" opacity="0.1" />
+                          
+                          {/* Romantisches Pärchen */}
+                          <g transform="translate(120, 180)">
+                            {/* Person links */}
+                            <ellipse cx="-15" cy="20" rx="8" ry="18" fill="#4a90e2" />
+                            <circle cx="-15" cy="5" r="5" fill="#fdbcb4" />
+                            <circle cx="-17" cy="3" r="0.8" fill="#333" />
+                            <circle cx="-13" cy="3" r="0.8" fill="#333" />
+                            <path d="M -18 7 Q -15 10 -12 7" stroke="#333" strokeWidth="0.8" fill="none" />
+                            
+                            {/* Person rechts */}
+                            <ellipse cx="15" cy="20" rx="8" ry="18" fill="#e74c3c" />
+                            <circle cx="15" cy="5" r="5" fill="#fdbcb4" />
+                            <circle cx="13" cy="3" r="0.8" fill="#333" />
+                            <circle cx="17" cy="3" r="0.8" fill="#333" />
+                            <path d="M 12 7 Q 15 10 18 7" stroke="#333" strokeWidth="0.8" fill="none" />
+                            
+                            {/* Händchen halten */}
+                            <ellipse cx="0" cy="25" rx="6" ry="3" fill="#fdbcb4" />
+                          </g>
+                          
+                          {/* Popcorn */}
+                          <g transform="translate(260, 200)">
+                            <polygon points="0,0 20,0 22,25 -2,25" fill="#ff6b35" />
+                            <circle cx="5" cy="-3" r="2" fill="#fff8dc" />
+                            <circle cx="12" cy="-5" r="2" fill="#fff8dc" />
+                            <circle cx="8" cy="-2" r="1.5" fill="#fff8dc" />
+                          </g>
+                          
+                          {/* Herzen */}
+                          <circle cx="140" cy="80" r="4" fill="#ff69b4" opacity="0.8" />
+                          <circle cx="180" cy="70" r="3" fill="#ff1493" opacity="0.7" />
+                          
+                          {/* Film-Beam */}
+                          <polygon points="20,160 120,80 120,200" fill="#ffd700" opacity="0.3" />
+                        </svg>
+                      );
+                    }
+
+                    if (activityType === 'swimming') {
+                      return (
+                        <svg viewBox="0 0 320 280" className="w-full h-full">
+                          <defs>
+                            <linearGradient id="swimCardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#8b5cf6" />
+                              <stop offset="100%" stopColor="#7c3aed" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="320" height="280" fill="url(#swimCardBg)" />
+                          
+                          {/* Sonne */}
+                          <circle cx="280" cy="40" r="25" fill="#ffd700" />
+                          
+                          {/* Pool-Linien */}
+                          <g opacity="0.4">
+                            <line x1="0" y1="100" x2="320" y2="100" stroke="#fff" strokeWidth="1" strokeDasharray="5,3" />
+                            <line x1="0" y1="130" x2="320" y2="130" stroke="#fff" strokeWidth="1" strokeDasharray="5,3" />
+                            <line x1="0" y1="160" x2="320" y2="160" stroke="#fff" strokeWidth="1" strokeDasharray="5,3" />
+                          </g>
+                          
+                          {/* Glückliche Schwimm-Familie */}
+                          <g transform="translate(80, 110)">
+                            {/* Schwimmender Erwachsener */}
+                            <g transform="translate(0, 0)">
+                              <ellipse cx="0" cy="10" rx="15" ry="25" fill="#ff6b6b" />
+                              <circle cx="0" cy="-5" r="7" fill="#fdbcb4" />
+                              <circle cx="-2" cy="-8" r="1" fill="#333" />
+                              <circle cx="2" cy="-8" r="1" fill="#333" />
+                              <path d="M -3 -4 Q 0 -1 3 -4" stroke="#333" strokeWidth="1" fill="none" />
+                              {/* Schwimm-Arme */}
+                              <ellipse cx="-18" cy="5" rx="4" ry="12" fill="#fdbcb4" transform="rotate(-30)" />
+                              <ellipse cx="18" cy="10" rx="4" ry="12" fill="#fdbcb4" transform="rotate(20)" />
+                            </g>
+                            
+                            {/* Kind mit Schwimmreifen */}
+                            <g transform="translate(50, 15)">
+                              <ellipse cx="0" cy="8" rx="8" ry="15" fill="#4ecdc4" />
+                              <circle cx="0" cy="-2" r="4" fill="#fdbcb4" />
+                              <circle cx="-1" cy="-4" r="0.6" fill="#333" />
+                              <circle cx="1" cy="-4" r="0.6" fill="#333" />
+                              <path d="M -2 0 Q 0 2 2 0" stroke="#333" strokeWidth="0.6" fill="none" />
+                              {/* Schwimmreifen */}
+                              <ellipse cx="-12" cy="3" rx="4" ry="6" fill="#ff9f43" opacity="0.9" />
+                              <ellipse cx="12" cy="3" rx="4" ry="6" fill="#ff9f43" opacity="0.9" />
+                            </g>
+                            
+                            {/* Zweiter Schwimmer */}
+                            <g transform="translate(100, -5)">
+                              <ellipse cx="0" cy="12" rx="12" ry="20" fill="#6c5ce7" />
+                              <circle cx="0" cy="0" r="6" fill="#fdbcb4" />
+                              <circle cx="-2" cy="-2" r="0.8" fill="#333" />
+                              <circle cx="2" cy="-2" r="0.8" fill="#333" />
+                              <path d="M -3 2 Q 0 5 3 2" stroke="#333" strokeWidth="0.8" fill="none" />
+                              {/* Rückenschwimmen */}
+                              <ellipse cx="-15" cy="8" rx="3" ry="10" fill="#fdbcb4" transform="rotate(-45)" />
+                              <ellipse cx="15" cy="8" rx="3" ry="10" fill="#fdbcb4" transform="rotate(45)" />
+                            </g>
+                          </g>
+                          
+                          {/* Wasser-Spritzer */}
+                          <g opacity="0.7">
+                            <circle cx="60" cy="120" r="2" fill="#87ceeb" />
+                            <circle cx="80" cy="115" r="1.5" fill="#87ceeb" />
+                            <circle cx="200" cy="125" r="2.5" fill="#87ceeb" />
+                            <circle cx="240" cy="118" r="1.8" fill="#87ceeb" />
+                          </g>
+                          
+                          {/* Wellen */}
+                          <g opacity="0.5">
+                            <ellipse cx="120" cy="120" rx="40" ry="8" fill="none" stroke="#fff" strokeWidth="1" />
+                            <ellipse cx="180" cy="135" rx="25" ry="5" fill="none" stroke="#fff" strokeWidth="1" />
+                          </g>
+                        </svg>
+                      );
+                    }
+
+                    if (activityType === 'zoo') {
+                      return (
+                        <svg viewBox="0 0 320 280" className="w-full h-full">
+                          <defs>
+                            <linearGradient id="zooCardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#8b5cf6" />
+                              <stop offset="100%" stopColor="#7c3aed" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="320" height="280" fill="url(#zooCardBg)" />
+                          
+                          {/* Safari-Sonne */}
+                          <circle cx="280" cy="50" r="30" fill="#ff9500" opacity="0.9" />
+                          
+                          {/* Bäume */}
+                          <ellipse cx="40" cy="220" rx="25" ry="40" fill="#2a9d8f" opacity="0.8" />
+                          <ellipse cx="280" cy="210" rx="30" ry="45" fill="#2a9d8f" opacity="0.8" />
+                          
+                          {/* Löwen-Familie */}
+                          <g transform="translate(160, 140)" opacity="0.9">
+                            {/* Erwachsener Löwe */}
+                            <ellipse cx="0" cy="20" rx="20" ry="30" fill="#daa520" />
+                            <circle cx="0" cy="0" r="12" fill="#daa520" />
+                            {/* Mähne */}
+                            <circle cx="0" cy="0" r="15" fill="#8b4513" opacity="0.7" />
+                            <circle cx="-3" cy="-3" r="1.5" fill="#333" />
+                            <circle cx="3" cy="-3" r="1.5" fill="#333" />
+                            <path d="M -5 3 Q 0 7 5 3" stroke="#333" strokeWidth="1.5" fill="none" />
+                            
+                            {/* Löwen-Baby */}
+                            <g transform="translate(30, 15)">
+                              <ellipse cx="0" cy="10" rx="8" ry="15" fill="#daa520" />
+                              <circle cx="0" cy="0" r="6" fill="#daa520" />
+                              <circle cx="-2" cy="-1" r="0.8" fill="#333" />
+                              <circle cx="2" cy="-1" r="0.8" fill="#333" />
+                              <path d="M -2 2 Q 0 4 2 2" stroke="#333" strokeWidth="0.8" fill="none" />
+                            </g>
+                          </g>
+                          
+                          {/* Begeisterte Familie */}
+                          <g transform="translate(60, 180)" opacity="0.9">
+                            {/* Papa zeigt aufgeregt */}
+                            <ellipse cx="0" cy="15" rx="8" ry="20" fill="#3498db" />
+                            <circle cx="0" cy="3" r="5" fill="#ffdbac" />
+                            <ellipse cx="15" cy="6" rx="12" ry="4" fill="#ffdbac" transform="rotate(20)" />
+                            <circle cx="-1" cy="1" r="0.8" fill="#333" />
+                            <circle cx="1" cy="1" r="0.8" fill="#333" />
+                            <ellipse cx="0" cy="5" rx="1.5" ry="1" fill="#333" />
+                            
+                            {/* Mama mit Kind */}
+                            <ellipse cx="25" cy="15" rx="6" ry="18" fill="#e74c3c" />
+                            <circle cx="25" cy="5" r="4" fill="#ffdbac" />
+                            
+                            {/* Kind vorne */}
+                            <ellipse cx="12" cy="22" rx="5" ry="12" fill="#f39c12" />
+                            <circle cx="12" cy="12" r="3.5" fill="#ffdbac" />
+                          </g>
+                          
+                          {/* Aufgeregter Ruf */}
+                          <ellipse cx="50" cy="150" rx="18" ry="12" fill="#fff" opacity="0.9" />
+                          <polygon points="42,162 38,170 48,167" fill="#fff" opacity="0.9" />
+                          <text x="50" y="156" textAnchor="middle" fill="#333" fontSize="10" fontWeight="bold">WOW!</text>
+                          
+                          {/* Vögel */}
+                          <g opacity="0.7">
+                            <path d="M 100 60 Q 105 55 110 60 Q 115 55 120 60" stroke="#264653" strokeWidth="2" fill="none" />
+                            <path d="M 140 80 Q 145 75 150 80 Q 155 75 160 80" stroke="#264653" strokeWidth="2" fill="none" />
+                          </g>
+                        </svg>
+                      );
+                    }
+
+                    if (activityType === 'minigolf') {
+                      return (
+                        <svg viewBox="0 0 320 280" className="w-full h-full">
+                          <defs>
+                            <linearGradient id="golfCardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#8b5cf6" />
+                              <stop offset="100%" stopColor="#7c3aed" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="320" height="280" fill="url(#golfCardBg)" />
+                          
+                          {/* Golf-Landschaft */}
+                          <ellipse cx="80" cy="200" rx="60" ry="30" fill="#10b981" opacity="0.8" />
+                          <ellipse cx="240" cy="220" rx="50" ry="25" fill="#10b981" opacity="0.8" />
+                          
+                          {/* Windmühle */}
+                          <g transform="translate(260, 120)">
+                            <rect x="-4" y="40" width="8" height="30" fill="#8b4513" />
+                            <polygon points="0,40 -15,10 15,10" fill="#dc2626" />
+                            
+                            {/* Windmühlen-Flügel */}
+                            <g transform="rotate(25)">
+                              <ellipse cx="0" cy="-20" rx="3" ry="18" fill="#f8f9fa" />
+                              <ellipse cx="20" cy="0" rx="18" ry="3" fill="#f8f9fa" />
+                              <ellipse cx="0" cy="20" rx="3" ry="18" fill="#f8f9fa" />
+                              <ellipse cx="-20" cy="0" rx="18" ry="3" fill="#f8f9fa" />
+                            </g>
+                            <circle cx="0" cy="0" r="4" fill="#374151" />
+                          </g>
+                          
+                          {/* Golf-Loch mit Fahne */}
+                          <circle cx="80" cy="240" r="6" fill="#000" />
+                          <line x1="80" y1="220" x2="80" y2="185" stroke="#374151" strokeWidth="1.5" />
+                          <polygon points="80,185 80,200 110,192" fill="#dc2626" />
+                          
+                          {/* Familie beim Spielen */}
+                          <g opacity="0.9" transform="translate(140, 200)">
+                            {/* Papa mit Schläger */}
+                            <ellipse cx="0" cy="20" rx="6" ry="18" fill="#3498db" />
+                            <circle cx="0" cy="6" r="4" fill="#fdbcb4" />
+                            <line x1="10" y1="15" x2="30" y2="10" stroke="#8b4513" strokeWidth="2" />
+                            
+                            {/* Kind schaut zu */}
+                            <ellipse cx="25" cy="25" rx="4" ry="12" fill="#f39c12" />
+                            <circle cx="25" cy="12" r="3" fill="#fdbcb4" />
+                            
+                            {/* Mama anfeuern */}
+                            <ellipse cx="50" cy="18" rx="5" ry="15" fill="#e74c3c" />
+                            <circle cx="50" cy="6" r="3.5" fill="#fdbcb4" />
+                            <ellipse cx="42" cy="12" rx="2" ry="6" fill="#fdbcb4" transform="rotate(-20)" />
+                            <ellipse cx="58" cy="12" rx="2" ry="6" fill="#fdbcb4" transform="rotate(20)" />
+                          </g>
+                          
+                          {/* Golf-Ball */}
+                          <circle cx="120" cy="245" r="3" fill="#f8f9fa" />
+                          
+                          {/* Blumen */}
+                          <circle cx="40" cy="120" r="3" fill="#f472b6" />
+                          <circle cx="290" cy="240" r="3" fill="#fbbf24" />
+                          
+                          {/* Aufmunterung */}
+                          <text x="160" y="160" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold">SUPER!</text>
+                        </svg>
+                      );
+                    }
+
+                    // Default: Allgemeine Freizeit-Szene
+                    return (
+                      <svg viewBox="0 0 320 280" className="w-full h-full">
+                        <defs>
+                          <linearGradient id="defaultCardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#8b5cf6" />
+                            <stop offset="100%" stopColor="#7c3aed" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="320" height="280" fill="url(#defaultCardBg)" />
+                        
+                        {/* Glückliche Familie */}
+                        <g transform="translate(100, 120)">
+                          {/* Erwachsener 1 */}
+                          <ellipse cx="0" cy="20" rx="10" ry="18" fill="#3498db" />
+                          <circle cx="0" cy="8" r="5" fill="#ffdbac" />
+                          <ellipse cx="12" cy="10" rx="6" ry="3" fill="#ffdbac" transform="rotate(20)" />
+                          
+                          {/* Erwachsener 2 */}
+                          <ellipse cx="30" cy="20" rx="8" ry="16" fill="#e74c3c" />
+                          <circle cx="30" cy="8" r="4" fill="#ffdbac" />
+                          
+                          {/* Kind */}
+                          <ellipse cx="15" cy="28" rx="5" ry="12" fill="#f39c12" />
+                          <circle cx="15" cy="18" r="3" fill="#ffdbac" />
+                          
+                          {/* Glückliche Gesichter */}
+                          <circle cx="-0.5" cy="6" r="0.8" fill="#333" />
+                          <circle cx="0.5" cy="6" r="0.8" fill="#333" />
+                          <path d="M -2,10 Q 0,12 2,10" stroke="#333" strokeWidth="1" fill="none" />
+                          
+                          <circle cx="29" cy="6" r="0.8" fill="#333" />
+                          <circle cx="31" cy="6" r="0.8" fill="#333" />
+                          <path d="M 28,10 Q 30,12 32,10" stroke="#333" strokeWidth="1" fill="none" />
+                          
+                          <circle cx="14.5" cy="16" r="0.6" fill="#333" />
+                          <circle cx="15.5" cy="16" r="0.6" fill="#333" />
+                          <path d="M 14,19 Q 15,21 16,19" stroke="#333" strokeWidth="0.8" fill="none" />
+                        </g>
+                        
+                        {/* Sonne */}
+                        <circle cx="280" cy="50" r="25" fill="#ffd700" opacity="0.8" />
+                        
+                        {/* Jubel */}
+                        <text x="160" y="80" textAnchor="middle" fill="#fff" fontSize="16" fontWeight="bold">TOLL!</text>
+                      </svg>
+                    );
+                  })()}
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute top-4 right-4 w-3 h-3 bg-white/30 rounded-full"></div>
+                <div className="absolute bottom-6 left-6 w-2 h-2 bg-purple-400/50 rounded-full"></div>
+                <div className="absolute top-1/3 left-4 w-1 h-1 bg-white/40 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll-Indikator */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+          <div className="flex flex-col items-center space-y-2 text-white/60">
+            <span className="text-xs">Scrollen für Angebote</span>
+            <div className="w-6 h-10 border border-white/30 rounded-full p-1">
+              <div className="w-1 h-3 bg-white/40 rounded-full animate-bounce"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Navigation */}
+      <div className="container mx-auto px-4 py-0">
+        <div className="max-w-6xl mx-auto">
+          {/* Main Content */}
+          <div className="w-full">
+            {/* Search Bar */}
+            <div className="sticky top-0 bg-gray-50 py-4 z-40">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder={`Suche ${partner?.companyName || 'Angebote'}`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-12 text-base border-gray-300 rounded-full"
+                />
+              </div>
+            </div>
+
+            {/* Category Navigation */}
+            <div className="sticky top-20 bg-gray-50 py-4 z-30 border-b">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                {categories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={activeCategory === category.id ? "default" : "outline"}
+                    onClick={() => scrollToCategory(category.id)}
+                    className={`rounded-full whitespace-nowrap ${
+                      activeCategory === category.id 
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                        : 'bg-white border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Content Sections */}
+            <div className="py-6">
+              {searchQuery ? (
+                // Search Results
+                <div>
+                  <h2 className="text-xl font-bold mb-4">
+                    Suchergebnisse für "{searchQuery}" ({filteredOffers.length})
+                  </h2>
+                  <div className="space-y-4">
+                    {filteredOffers.map((offer: any) => (
+                      <OfferCard key={offer.id} offer={offer} onAdd={addToCart} cart={cart} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                // Category Sections
+                categories.map((category) => (
+                  <div key={category.id} id={`category-${category.id}`} className="mb-8">
+                    <h2 className="text-xl font-bold mb-1">{category.name}</h2>
+                    {category.id === 'beliebte' && (
+                      <p className="text-sm text-gray-600 mb-4">Unsere beliebtesten Angebote</p>
+                    )}
+                    <div className="space-y-4">
+                      {category.offers.map((offer: any) => (
+                        <OfferCard key={offer.id} offer={offer} onAdd={addToCart} cart={cart} />
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Shopping Cart Sidebar - Lieferando Style */}
+          <div className="w-96 sticky top-4 h-fit">
+            <Card className="shadow-lg border-t-4 border-t-orange-500">
+              <CardHeader className="bg-gray-50">
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5 text-orange-500" />
+                  Buchungskorb
+                </CardTitle>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Timer className="h-4 w-4" />
+                    <span>Buchung</span>
+                  </div>
+                  <span>Sofort verfügbar</span>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                {cart.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <ShoppingCart className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <h3 className="font-medium text-gray-900 mb-2">Fülle deinen Buchungskorb</h3>
+                    <p className="text-sm text-gray-500">Füge einige leckere Angebote aus der Speisekarte hinzu und bestelle dein Erlebnis.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="max-h-96 overflow-y-auto">
+                      {cart.map((item) => (
+                        <div key={item.id} className="p-4 border-b border-gray-100">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-medium text-sm">{item.title}</h4>
+                            <div className="text-sm font-medium">
+                              {(item.price * item.quantity).toFixed(2)}€
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => removeFromCart(item.id)}
+                                className="h-8 w-8 p-0 rounded-full"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="w-8 text-center text-sm">{item.quantity}</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => addToCart(item)}
+                                className="h-8 w-8 p-0 rounded-full"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {item.price.toFixed(2)}€ / Stück
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="p-4 bg-gray-50">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="font-medium">Zwischensumme</span>
+                        <span className="font-bold text-lg">{cartTotal.toFixed(2)}€</span>
+                      </div>
+                      
+                      <Button 
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 text-base font-medium"
+                        onClick={() => setSelectedOffer(cart[0])}
+                      >
+                        Zur Buchung ({cartItemCount})
+                      </Button>
+                      
+                      <div className="mt-3 text-xs text-gray-500 text-center">
+                        Sofortige Bestätigung • Keine versteckten Gebühren
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Floating Cart Button für Mobile */}
+        {cart.length > 0 && (
+          <div className="fixed bottom-6 right-6 z-50 lg:hidden">
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white rounded-full h-16 w-16 shadow-lg flex flex-col items-center justify-center"
+              onClick={() => setSelectedOffer(cart[0])}
+            >
+              <ShoppingCart className="h-6 w-6" />
+              <span className="text-xs font-bold">{cartItemCount}</span>
+            </Button>
+          </div>
+        )}
+
+        {/* Kompakter Cart für Desktop - als Sticky Element */}
+        {cart.length > 0 && (
+          <div className="hidden lg:block fixed bottom-6 right-6 z-40">
+            <Card className="w-80 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center justify-between text-base">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4 text-orange-500" />
+                    Buchungskorb ({cartItemCount})
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedOffer(cart[0])}
+                    className="text-orange-500 hover:text-orange-600 p-1"
+                  >
+                    →
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-1 mb-3 max-h-32 overflow-y-auto">
+                  {cart.slice(0, 3).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between text-sm py-1">
+                      <div className="flex-1 truncate">
+                        <span className="font-medium">{item.title}</span>
+                        <span className="text-gray-500 ml-1">x{item.quantity}</span>
+                      </div>
+                      <span className="font-medium text-orange-600">{(item.price * item.quantity).toFixed(2)}€</span>
+                    </div>
+                  ))}
+                  {cart.length > 3 && (
+                    <div className="text-xs text-gray-500 text-center py-1">
+                      ... und {cart.length - 3} weitere
+                    </div>
+                  )}
+                </div>
+                
+                <div className="border-t pt-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-sm">Summe</span>
+                    <span className="font-bold text-orange-600">{cartTotal.toFixed(2)}€</span>
+                  </div>
+                  
+                  <Button 
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white h-9 text-sm"
+                    onClick={() => setSelectedOffer(cart[0])}
+                  >
+                    Zur Buchung
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Booking Modal */}
+      {selectedOffer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Buchung abschließen</span>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedOffer(null)}>
+                  ✕
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cart.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-medium mb-4">Ihre Auswahl:</h3>
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex justify-between py-2 border-b">
+                      <div>
+                        <span className="font-medium">{item.title}</span>
+                        <span className="text-gray-500 ml-2">x{item.quantity}</span>
+                      </div>
+                      <span className="font-medium">{(item.price * item.quantity).toFixed(2)}€</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between pt-4 font-bold text-lg">
+                    <span>Gesamtsumme:</span>
+                    <span>{cartTotal.toFixed(2)}€</span>
+                  </div>
+                </div>
+              )}
+              
+              <SimpleBookingForm
+                offer={cart[0] || selectedOffer}
+                partner={partner}
+                activityType={activityType}
+                cart={cart}
+                cartTotal={cartTotal}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Offer Card Component - Lieferando Style
+function OfferCard({ offer, onAdd, cart }: { offer: any, onAdd: (offer: any) => void, cart: any[] }) {
+  const cartItem = cart.find(item => item.id === offer.id);
+  const quantity = cartItem?.quantity || 0;
+
+  return (
+    <Card className="hover:shadow-md transition-shadow border-l-2 border-l-transparent hover:border-l-orange-500">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start">
+          <div className="flex-1 pr-4">
+            <h3 className="font-medium text-base mb-1">{offer.title}</h3>
+            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+              {offer.description}
+            </p>
+            
+            <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{offer.duration > 0 ? `${offer.duration} Min` : 'Flexibel'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                <span>Bis {offer.maxParticipants}</span>
+              </div>
+              {offer.featured && (
+                <Badge variant="secondary" className="text-xs">Beliebt</Badge>
+              )}
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-base font-bold">ab {offer.price.toFixed(2)}€</span>
+                <div className="text-xs text-gray-500">pro Person</div>
+              </div>
+              
+              <Button
+                onClick={() => onAdd(offer)}
+                className="bg-white border border-orange-500 text-orange-500 hover:bg-orange-50 h-10 w-10 p-0 rounded-full"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center text-2xl">
+            {offer.category?.name?.toLowerCase().includes('bowling') && '🎳'}
+            {offer.category?.name?.toLowerCase().includes('kino') && '🎬'}
+            {offer.category?.name?.toLowerCase().includes('schwimm') && '🏊'}
+            {offer.category?.name?.toLowerCase().includes('zoo') && '🦁'}
+            {offer.category?.name?.toLowerCase().includes('minigolf') && '⛳'}
+          </div>
+        </div>
+        
+        {quantity > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-green-600 font-medium">Im Buchungskorb: {quantity}x</span>
+              <span className="font-medium">{(offer.price * quantity).toFixed(2)}€</span>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

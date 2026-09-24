@@ -9,7 +9,7 @@ import GroupActivitiesSection from "@/components/GroupActivitiesSection";
 import EventGroupsSection from "@/components/EventGroupsSection";
 import BundlesPromoSection from "@/components/BundlesPromoSection";
 import { Experience } from "@shared/schema";
-import { apiRequest } from "@/partner-demo/queryClient";
+import { apiRequest } from "@/partner/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { resolvePartnerRoute, resolveCategoryRoute, DEFAULT_ACTIVITY_DETAIL_ROUTE } from "@/lib/activity-route-resolver";
+import { resolvePartnerRoute } from "@/lib/activity-route-resolver";
 
 import heroBackground from "@assets/image_1767891623582.png";
 // Real per-category stock photos restored from the original source
@@ -362,8 +362,8 @@ export default function HomePage() {
     );
   };
 
-  // Every card below is grouped from demoFeaturedExperiences (partnerId 601+,
-  // from demoOffers), which has no matching entry in demoShopPartners (the
+  // Every card below is grouped from featuredExperiences (partnerId 601+,
+  // from offerCatalog), which has no matching entry in shopPartners (the
   // data backing the real /partners/:id Shop page, id 501+). resolvePartnerRoute
   // sends each card to the closest category match among the working shop
   // pages (or the Bowling shop as a last resort) instead of a dead link.
@@ -479,10 +479,11 @@ export default function HomePage() {
   );
 
   const handleSearch = () => {
-    // DEMO: no /search results page exists yet - route to the closest
-    // matching (or Bowling, as a last resort) working partner shop
-    // instead of a dead /search?... link.
-    setLocation(resolveCategoryRoute(activityFilter || locationFilter));
+    const params = new URLSearchParams();
+    if (locationFilter) params.set('location', locationFilter);
+    if (activityFilter) params.set('category', activityFilter);
+    if (dateFilter) params.set('date', format(dateFilter, 'yyyy-MM-dd'));
+    setLocation(`/search?${params.toString()}`);
   };
 
   return (
@@ -730,9 +731,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
             {(showAllCities ? cities : cities?.slice(0, 18))?.map((city) => (
-              // DEMO: no per-city /search results page exists yet - route to
-              // the working Bowling shop instead of a dead ?location= link.
-              <Link key={city} href={DEFAULT_ACTIVITY_DETAIL_ROUTE}>
+              <Link key={city} href={`/search?location=${encodeURIComponent(city)}`}>
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all cursor-pointer group">
                   <MapPin className="h-3.5 w-3.5 text-purple-400 group-hover:text-purple-600 flex-shrink-0" />
                   <span className="text-sm text-gray-700 group-hover:text-purple-700 truncate">{city}</span>
@@ -769,7 +768,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
             {partnerCategoryStats.map((cat) => (
-              <Link key={cat.name} href={resolveCategoryRoute(cat.name)}>
+              <Link key={cat.name} href={`/search?category=${encodeURIComponent(cat.slug)}`}>
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-5 flex flex-col items-center justify-center hover:shadow-md hover:border-purple-200 transition-all cursor-pointer group">
                   <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full ${cat.bgColor} flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform`}>
                     <cat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${cat.iconColor}`} />

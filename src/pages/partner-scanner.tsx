@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { SimulatedQRScanner } from "@/components/simulated-qr-scanner";
+import { NativeQRScanner } from "@/components/native-qr-scanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/partner-demo/queryClient";
+import { apiRequest } from "@/partner/queryClient";
 import {
   QrCode,
   Camera,
@@ -215,7 +215,7 @@ export default function QRScanner() {
 
             {isScanning ? (
               <div className="space-y-4">
-                <SimulatedQRScanner
+                <NativeQRScanner
                   isActive={isScanning}
                   onScan={handleScan}
                   onError={handleScanError}

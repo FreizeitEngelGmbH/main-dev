@@ -1225,7 +1225,7 @@ export default function AdminAccounting() {
     mutationFn: async () => apiRequest("POST", "/api/admin/accounting/seed"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/accounting"] });
-      toast({ title: "Demo-Daten angelegt" });
+      toast({ title: "Beispieldaten angelegt" });
     },
   });
 
@@ -1238,7 +1238,7 @@ export default function AdminAccounting() {
             <p className="text-muted-foreground">Finanzverwaltung im Lexoffice-Stil</p>
           </div>
           <Button variant="outline" onClick={() => seedMutation.mutate()} disabled={seedMutation.isPending}>
-            {seedMutation.isPending ? "Laden..." : "Demo-Daten laden"}
+            {seedMutation.isPending ? "Laden..." : "Beispieldaten laden"}
           </Button>
         </div>
 

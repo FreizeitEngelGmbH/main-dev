@@ -114,6 +114,21 @@ export interface Partner {
   createdAt: Date | string;
 }
 
+export interface Review {
+  id: number;
+  userId: number | null;
+  experienceId: number | null;
+  partnerId: number | null;
+  bookingId: number | null;
+  rating: number;
+  title: string;
+  content: string;
+  guestName: string | null;
+  guestEmail: string | null;
+  helpfulCount: number | null;
+  createdAt: Date | string | null;
+}
+
 export interface Booking {
   id: number;
   bookingReference: string | null;
@@ -515,3 +530,147 @@ export const insertExperienceSchema = z.object({
   instantBooking: z.boolean().optional(),
   requiresApproval: z.boolean().optional(),
 });
+
+// Mirrored verbatim from the source schema (plain TypeScript types, no database dependency);
+// used by src/components/booking/activity-booking.tsx.
+// Aktivitätsspezifische Konfigurationstypen
+export interface CinemaBookingConfig {
+  type: 'cinema';
+  movies: Array<{
+    id: string;
+    title: string;
+    duration: number; // Minuten
+    genre: string;
+    rating: string; // FSK
+    showings: Array<{
+      id: string;
+      datetime: string;
+      hall: string;
+      availableSeats: number;
+      totalSeats: number;
+      priceAdult: number;
+      priceChild: number;
+      priceStudent: number;
+    }>;
+  }>;
+}
+
+export interface SwimmingBookingConfig {
+  type: 'swimming';
+  pricing: {
+    adult: number;
+    child: number;
+    family: number; // 2 Erwachsene + bis zu 3 Kinder
+    senior: number;
+  };
+  openingHours: Array<{
+    dayOfWeek: number; // 0 = Sonntag, 1 = Montag, etc.
+    open: string; // "09:00"
+    close: string; // "22:00"
+    closed?: boolean;
+  }>;
+  facilities: string[];
+  seasonalPricing?: {
+    summer: { multiplier: number; startDate: string; endDate: string; };
+    winter: { multiplier: number; startDate: string; endDate: string; };
+  };
+}
+
+export interface BowlingBookingConfig {
+  type: 'bowling';
+  lanes: number;
+  pricing: {
+    hourlyRate: number;
+    shoeRental: number;
+    groupDiscount?: { minPeople: number; discount: number; };
+  };
+  availability: Array<{
+    dayOfWeek: number;
+    timeSlots: Array<{
+      start: string;
+      end: string;
+      available: boolean;
+    }>;
+  }>;
+}
+
+export interface ZooBookingConfig {
+  type: 'zoo';
+  ticketTypes: Array<{
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    validityDays: number;
+  }>;
+  guidedTours?: Array<{
+    id: string;
+    name: string;
+    duration: number;
+    price: number;
+    maxParticipants: number;
+    times: string[];
+  }>;
+  groupPricing?: {
+    minSize: number;
+    discount: number;
+  };
+}
+
+export type ActivityBookingConfig = 
+  | CinemaBookingConfig 
+  | SwimmingBookingConfig 
+  | BowlingBookingConfig 
+  | ZooBookingConfig;
+
+// Buchungsdetails-Typen
+export interface CinemaBookingDetails {
+  movieId: string;
+  showingId: string;
+  seatNumbers?: string[];
+  ticketTypes: Array<{
+    type: 'adult' | 'child' | 'student';
+    quantity: number;
+    price: number;
+  }>;
+}
+
+export interface SwimmingBookingDetails {
+  ticketTypes: Array<{
+    type: 'adult' | 'child' | 'family' | 'senior';
+    quantity: number;
+    price: number;
+  }>;
+  visitDate: string;
+  timeSlot?: string;
+}
+
+export interface BowlingBookingDetails {
+  laneNumber?: number;
+  timeSlot: {
+    start: string;
+    end: string;
+  };
+  shoeRentals: number;
+  totalHours: number;
+}
+
+export interface ZooBookingDetails {
+  ticketTypes: Array<{
+    ticketId: string;
+    quantity: number;
+    price: number;
+  }>;
+  guidedTour?: {
+    tourId: string;
+    time: string;
+    participants: number;
+  };
+  visitDate: string;
+}
+
+export type ActivityBookingDetails = 
+  | CinemaBookingDetails 
+  | SwimmingBookingDetails 
+  | BowlingBookingDetails 
+  | ZooBookingDetails;

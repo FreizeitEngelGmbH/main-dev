@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGroupActivityImage } from "@/lib/group-activity-images";
-import { resolveCategoryRoute } from "@/lib/activity-route-resolver";
 
 const WEEKDAY_SHORT = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
@@ -26,10 +25,10 @@ function inDays(days: number, hour: number, minute: number): string {
   return d.toISOString();
 }
 
-// DEMO: local mock data standing in for the real /api/group-activities
+// STATIC: local mock data standing in for the real /api/group-activities
 // response, so this section shows a populated grid instead of the "Noch
 // keine offenen Gruppen" empty state.
-const DEMO_GROUPS = [
+const STATIC_GROUPS = [
   {
     id: 1,
     title: "Mission Mars – 60 Min Rätsel-Spaß",
@@ -137,10 +136,7 @@ function GroupCard({ group }: { group: any }) {
   const avatarsToShow = Math.min(cur || 1, 3);
   const extraCount = Math.max((cur || 0) - avatarsToShow, 0);
   const isAlmostFull = free > 0 && free <= 2;
-  // DEMO: this group has no real detail page/API yet - route to the closest
-  // matching (or Bowling, as a last resort) working partner shop instead of
-  // a dead /gruppen/:id link. See src/lib/activity-route-resolver.ts.
-  const detailRoute = resolveCategoryRoute(group.category);
+  const detailRoute = `/gruppen/${group.id}`;
 
   return (
     <Card
@@ -291,12 +287,12 @@ function CreateOwnCard() {
 export default function GroupActivitiesSection() {
   const { data: groups, isLoading } = useQuery<any[]>({
     queryKey: ["/api/group-activities", "open"],
-    // DEMO: real file called fetch("/api/group-activities?...") directly here,
+    // STATIC: real file called fetch("/api/group-activities?...") directly here,
     // bypassing the shared mocked queryClient. Replaced with local mock
     // resolution so this component can never issue a real network request.
     queryFn: async () => {
       await new Promise((r) => setTimeout(r, 250));
-      return DEMO_GROUPS;
+      return STATIC_GROUPS;
     },
   });
 

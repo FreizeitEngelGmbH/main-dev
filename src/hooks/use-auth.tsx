@@ -8,7 +8,7 @@ import { loginAndRestore, logoutAndClear, registerAndRestore } from "@/auth/auth
 import type { AuthUser, LoginRequest, RegisterRequest } from "@/auth/auth.types";
 import { onUnauthorized } from "@/api/sessionEvents";
 import { clearProtectedQueryData } from "@/auth/auth.mutations";
-import { queryClient as partnerQueryClient } from "@/partner-demo/queryClient";
+import { queryClient as partnerQueryClient } from "@/partner/queryClient";
 
 type AuthContextType = {
   user: AuthUser | null;

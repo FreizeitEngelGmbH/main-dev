@@ -5,9 +5,9 @@ import { partnersSeed, daysAgo } from "../data/core";
 
 const accounts = createStore<PaymentAccount>(
   partnersSeed.slice(0, 4).map((p, i) => ({
-    id: i + 1, partnerId: p.id, stripeAccountId: `acct_demo_${p.id}`, accountStatus: i === 3 ? "pending" : "active",
+    id: i + 1, partnerId: p.id, stripeAccountId: `acct_local_${p.id}`, accountStatus: i === 3 ? "pending" : "active",
     onboardingComplete: i !== 3, payoutsEnabled: i !== 3, chargesEnabled: i !== 3, defaultCurrency: "eur", commissionRate: 0.11,
-    businessType: "company", companyName: p.companyName, email: p.email, country: "DE", bankAccountLast4: "4242", bankName: "Demo Bank",
+    businessType: "company", companyName: p.companyName, email: p.email, country: "DE", bankAccountLast4: "4242", bankName: "Beispielbank",
     totalEarnings: 4200 - i * 600, totalPayouts: 3800 - i * 600, pendingBalance: 400, createdAt: daysAgo(200 - i * 10), updatedAt: daysAgo(5),
   }))
 );
@@ -31,7 +31,7 @@ const transactions = createStore<PaymentTransaction>(
 const payouts = createStore<PaymentPayout>(
   accounts.list().map((acc, i) => ({
     id: i + 1, payoutRef: `PO-${(700000 + i).toString(36).toUpperCase()}`, partnerId: acc.partnerId, paymentAccountId: acc.id,
-    amount: acc.totalPayouts ?? 0, currency: "EUR", status: i === 0 ? "pending" : "completed", stripePayoutId: `po_demo_${i}`,
+    amount: acc.totalPayouts ?? 0, currency: "EUR", status: i === 0 ? "pending" : "completed", stripePayoutId: `po_local_${i}`,
     periodStart: daysAgo(37), periodEnd: daysAgo(7), transactionCount: 4 + i, bankAccountLast4: "4242", failureReason: null,
     processedAt: i === 0 ? null : daysAgo(6), createdAt: daysAgo(7),
   }))
@@ -50,7 +50,7 @@ registerMock("GET", "/api/admin/payments/stats", () => ({
 registerMock("GET", "/api/admin/payments/accounts", () => accounts.list());
 registerMock("GET", "/api/admin/payments/transactions", () => transactions.list());
 registerMock("GET", "/api/admin/payments/payouts", () => payouts.list());
-registerMock("POST", "/api/admin/payments/seed", () => ({ imported: 0, message: "Demo-Daten sind bereits geladen." }));
+registerMock("POST", "/api/admin/payments/seed", () => ({ imported: 0, message: "Beispieldaten sind bereits geladen." }));
 registerMock("GET", "/api/admin/payments/settings", () => ({ commission: commissionSettings, onlineFee: onlineFeeSettings }));
 registerMock("POST", "/api/admin/payments/settings/commission", (_p, _q, body) => {
   Object.assign(commissionSettings, body as object);

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings, Clock, Users, Percent, Save } from "lucide-react";
-import { apiRequest, queryClient } from "@/partner-demo/queryClient";
+import { apiRequest, queryClient } from "@/partner/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface BookingSettingsType {

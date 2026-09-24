@@ -46,15 +46,15 @@ import AdminRegiondo from "@/pages/admin/admin-regiondo";
 import AdminEversport from "@/pages/admin/admin-eversport";
 import AdminPlanyo from "@/pages/admin/admin-planyo";
 import AdminPretix from "@/pages/admin/admin-pretix";
-import PartnerDemoApp from "@/partner-demo/PartnerDemoApp";
+import PartnerApp from "@/partner/PartnerApp";
 
 import { ProtectedRoute } from "./lib/protected-route";
 
 /**
  * One app, three areas:
- *  - public:  `/` (landing page), `/auth` (login)
+ *  - public:  `/` (redirects to `/home`), `/landing` (landing page), `/auth` (login)
  *  - admin:   `/admin/*` — `requiredRole="admin"`, paths/layout as in the source project
- *  - partner: the Partner Demo (`PartnerDemoApp`): `/partner` (pitch + application),
+ *  - partner: the Partner app (`PartnerApp`): `/partner` (pitch + application),
  *             `/partner/dashboard|inquiries|group-activities[/:id]|scanner`
  *             (`requiredRole="partner"`), plus its public pages (`/home`, `/partners/:id`,
  *             `/bundles`, `/gruppen-events[/:key]`). It is the last route, so any
@@ -65,10 +65,10 @@ import { ProtectedRoute } from "./lib/protected-route";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <LandingPage />} />
-      <Route path="/landing">
-        <Redirect to="/" replace />
+      <Route path="/">
+        <Redirect to="/home" replace />
       </Route>
+      <Route path="/landing" component={() => <LandingPage />} />
 
       <Route path="/auth" component={() => <AuthPage />} />
 
@@ -208,9 +208,9 @@ function Router() {
       <ProtectedRoute path="/admin/integration-architecture" component={IntegrationArchitecture} requiredRole="admin" />
       <ProtectedRoute path="/admin/voice-agent" component={AdminVoiceAgent} requiredRole="admin" />
 
-      {/* Unknown admin URLs keep the 404 page; everything else falls through to the Partner Demo. */}
+      {/* Unknown admin URLs keep the 404 page; everything else falls through to the Partner app. */}
       <Route path="/admin/*" component={NotFound} />
-      <Route component={PartnerDemoApp} />
+      <Route component={PartnerApp} />
     </Switch>
   );
 }

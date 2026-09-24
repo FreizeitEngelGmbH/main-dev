@@ -2,10 +2,10 @@ import { Link } from "wouter";
 import { MapPin, Star, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FavoritesButton } from "@/components/favorites-button";
-// DEMO: getCategoryImage/getRandomExperienceImage import removed - depended on
+// STATIC: getCategoryImage/getRandomExperienceImage import removed - depended on
 // @/lib/images, a file with dozens of /attached_assets/* paths never uploaded.
 // This component is not currently used by the trimmed home page; the import
-// was dead code relative to what's wired up in this demo.
+// was dead code relative to what's wired up in this static build.
 
 interface ExperienceCardProps {
   id: number;
@@ -78,7 +78,7 @@ export function ExperienceCard({
       const poolIndex = id % poolImages.length;
       return poolImages[poolIndex];
     }
-    return categoryFallback; // DEMO: static fallback, real getRandomExperienceImage() unavailable
+    return categoryFallback; // STATIC: static fallback, real getRandomExperienceImage() unavailable
   };
   const categoryFallback = "/src/assets/images/zoo.png";
   

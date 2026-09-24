@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, Layers, Settings, Edit } from "lucide-react";
-import { apiRequest, queryClient } from "@/partner-demo/queryClient";
+import { apiRequest, queryClient } from "@/partner/queryClient";
 
 interface Resource {
   id: number;

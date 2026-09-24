@@ -4,20 +4,20 @@ import { HrDepartment, HrEmployee, HrAbsence } from "@shared/schema";
 import { daysAgo } from "../data/core";
 
 const departments = createStore<HrDepartment>([
-  { id: 1, name: "Vertrieb", description: "Partneraquise & Sales", color: "#6366f1", headOfDepartment: "Admin Demo", createdAt: daysAgo(300) },
+  { id: 1, name: "Vertrieb", description: "Partneraquise & Sales", color: "#6366f1", headOfDepartment: "Admin", createdAt: daysAgo(300) },
   { id: 2, name: "Marketing", description: "Kampagnen & Content", color: "#22c55e", headOfDepartment: null, createdAt: daysAgo(300) },
   { id: 3, name: "Tech", description: "Plattform & Produkt", color: "#eab308", headOfDepartment: null, createdAt: daysAgo(300) },
 ]);
 
 const employees = createStore<HrEmployee>([
-  { id: 1, firstName: "Admin", lastName: "Demo", email: "admin@freizeitengel.demo", phone: null, position: "Geschäftsführung", departmentId: 3, employmentType: "Vollzeit", status: "aktiv", startDate: "2023-01-15", salary: null, weeklyHours: 40, vacationDays: 30, usedVacationDays: 8, profileImage: null, address: null, city: "Dortmund", zipCode: null, emergencyContact: null, emergencyPhone: null, notes: null, createdAt: daysAgo(400), updatedAt: daysAgo(10) },
-  { id: 2, firstName: "Nina", lastName: "Fischer", email: "n.fischer@freizeitengel.demo", phone: "+49 151 5551111", position: "Sales Managerin", departmentId: 1, employmentType: "Vollzeit", status: "aktiv", startDate: "2023-06-01", salary: null, weeklyHours: 40, vacationDays: 28, usedVacationDays: 12, profileImage: null, address: null, city: "Dortmund", zipCode: null, emergencyContact: null, emergencyPhone: null, notes: null, createdAt: daysAgo(300), updatedAt: daysAgo(5) },
-  { id: 3, firstName: "David", lastName: "Roth", email: "d.roth@freizeitengel.demo", phone: "+49 151 5552222", position: "Marketing Manager", departmentId: 2, employmentType: "Teilzeit", status: "aktiv", startDate: "2024-02-01", salary: null, weeklyHours: 24, vacationDays: 18, usedVacationDays: 4, profileImage: null, address: null, city: "Essen", zipCode: null, emergencyContact: null, emergencyPhone: null, notes: null, createdAt: daysAgo(200), updatedAt: daysAgo(2) },
+  { id: 1, firstName: "Admin", lastName: "Team", email: "admin@freizeitengel.test", phone: null, position: "Geschäftsführung", departmentId: 3, employmentType: "Vollzeit", status: "aktiv", startDate: "2023-01-15", salary: null, weeklyHours: 40, vacationDays: 30, usedVacationDays: 8, profileImage: null, address: null, city: "Dortmund", zipCode: null, emergencyContact: null, emergencyPhone: null, notes: null, createdAt: daysAgo(400), updatedAt: daysAgo(10) },
+  { id: 2, firstName: "Nina", lastName: "Fischer", email: "n.fischer@freizeitengel.test", phone: "+49 151 5551111", position: "Sales Managerin", departmentId: 1, employmentType: "Vollzeit", status: "aktiv", startDate: "2023-06-01", salary: null, weeklyHours: 40, vacationDays: 28, usedVacationDays: 12, profileImage: null, address: null, city: "Dortmund", zipCode: null, emergencyContact: null, emergencyPhone: null, notes: null, createdAt: daysAgo(300), updatedAt: daysAgo(5) },
+  { id: 3, firstName: "David", lastName: "Roth", email: "d.roth@freizeitengel.test", phone: "+49 151 5552222", position: "Marketing Manager", departmentId: 2, employmentType: "Teilzeit", status: "aktiv", startDate: "2024-02-01", salary: null, weeklyHours: 24, vacationDays: 18, usedVacationDays: 4, profileImage: null, address: null, city: "Essen", zipCode: null, emergencyContact: null, emergencyPhone: null, notes: null, createdAt: daysAgo(200), updatedAt: daysAgo(2) },
 ]);
 
 const absences = createStore<HrAbsence>([
-  { id: 1, employeeId: 2, type: "Urlaub", startDate: "2025-08-04", endDate: "2025-08-15", days: 10, status: "genehmigt", reason: null, approvedBy: "Admin Demo", createdAt: daysAgo(40) },
-  { id: 2, employeeId: 3, type: "Krankheit", startDate: "2025-07-02", endDate: "2025-07-03", days: 2, status: "genehmigt", reason: null, approvedBy: "Admin Demo", createdAt: daysAgo(70) },
+  { id: 1, employeeId: 2, type: "Urlaub", startDate: "2025-08-04", endDate: "2025-08-15", days: 10, status: "genehmigt", reason: null, approvedBy: "Admin", createdAt: daysAgo(40) },
+  { id: 2, employeeId: 3, type: "Krankheit", startDate: "2025-07-02", endDate: "2025-07-03", days: 2, status: "genehmigt", reason: null, approvedBy: "Admin", createdAt: daysAgo(70) },
   { id: 3, employeeId: 2, type: "Urlaub", startDate: "2025-09-22", endDate: "2025-09-26", days: 5, status: "beantragt", reason: null, approvedBy: null, createdAt: daysAgo(3) },
 ]);
 

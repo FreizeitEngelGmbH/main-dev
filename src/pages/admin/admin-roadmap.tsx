@@ -105,7 +105,7 @@ const initialPhases: RoadmapPhase[] = [
         tasks: [
           { id: "a1", title: "Kaltakquise starten (50+ Kontakte/Woche)", description: "Telefonische Erstansprache, E-Mail-Outreach an Freizeitanbieter", status: "planned", category: "vertrieb", week: "KW 14-15" },
           { id: "a2", title: "Vor-Ort-Besuche bei Top-Partnern", description: "Persönliche Vorstellung bei 10-15 Premium-Partnern pro Woche", status: "planned", category: "vertrieb", week: "KW 14-17" },
-          { id: "a3", title: "Erstgespräche & Demo-Präsentationen", description: "Live-Demo der Plattform, Konditionen besprechen", status: "planned", category: "vertrieb", week: "KW 15-17" },
+          { id: "a3", title: "Erstgespräche & Produktpräsentationen", description: "Live-Präsentation der Plattform, Konditionen besprechen", status: "planned", category: "vertrieb", week: "KW 15-17" },
           { id: "a4", title: "Follow-Up-Prozess etablieren", description: "Automatisierte Follow-Ups nach 3, 7, 14 Tagen", status: "planned", category: "vertrieb", week: "KW 15" },
           { id: "a5", title: "Erste 10 Partnerverträge abschließen", description: "Ziel: 10 signierte Verträge bis Ende April", status: "planned", category: "vertrieb", week: "KW 16-17" },
           { id: "a6", title: "Branchen-Events & Messen besuchen", description: "Networking auf regionalen Freizeit- und Tourismusmessen", status: "planned", category: "vertrieb", week: "KW 16-17" },

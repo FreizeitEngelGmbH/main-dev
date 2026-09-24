@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/partner-demo/queryClient";
+import { queryClient, apiRequest } from "@/partner/queryClient";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
 import { de } from "date-fns/locale";
 import { Calendar, Plus, Trash2, Clock, Users, ChevronLeft, ChevronRight, Copy, Wand2 } from "lucide-react";
@@ -32,7 +32,7 @@ interface AvailabilitySlot {
   isBlocked: boolean;
 }
 
-// DEMO: local recurring-weekly mock standing in for the real
+// STATIC: local recurring-weekly mock standing in for the real
 // /api/partner/slots response, generated relative to whichever week is
 // being viewed so browsing forward/backward always shows a populated
 // calendar instead of an empty one.
@@ -43,7 +43,7 @@ const SLOT_TEMPLATE: { dayOffset: number; times: [number, number][] }[] = [
   { dayOffset: 5, times: [[10, 0], [11, 15], [14, 0]] }, // Samstag
 ];
 
-function generateDemoSlots(weekStart: Date, experienceId: number): AvailabilitySlot[] {
+function generateWeeklySlots(weekStart: Date, experienceId: number): AvailabilitySlot[] {
   const capacity = 8;
   const slots: AvailabilitySlot[] = [];
   let seq = 0;
@@ -107,13 +107,13 @@ export default function SlotManagement() {
 
   const { data: slots, isLoading: isLoadingSlots, refetch: refetchSlots } = useQuery<AvailabilitySlot[]>({
     queryKey: ["/api/partner/slots", selectedExperience, format(currentWeekStart, "yyyy-MM-dd")],
-    // DEMO: real file called fetch(`/api/partner/slots?...`) directly here,
+    // STATIC: real file called fetch(`/api/partner/slots?...`) directly here,
     // bypassing the shared mocked queryClient. Replaced with local mock
     // resolution so this component can never issue a real network request.
     queryFn: async () => {
       await new Promise((r) => setTimeout(r, 250));
       if (!selectedExperience) return [];
-      return generateDemoSlots(currentWeekStart, selectedExperience);
+      return generateWeeklySlots(currentWeekStart, selectedExperience);
     },
     enabled: !!selectedExperience,
   });

@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest, queryClient } from "@/partner-demo/queryClient";
+import { apiRequest, queryClient } from "@/partner/queryClient";
 import { Plus } from "lucide-react";
 
-const CATEGORIES = [
+export const CATEGORIES = [
   { value: "Bowling", label: "Bowling" },
   { value: "Lasertag", label: "Lasertag" },
   { value: "Escape Room", label: "Escape Room" },
@@ -23,12 +23,14 @@ const CATEGORIES = [
   { value: "Sonstiges", label: "Sonstiges" },
 ];
 
-// DEMO: adapted from the real app's CreateGroupDialog (group-activities-page.tsx).
+// STATIC: adapted from the real app's CreateGroupDialog (group-activities-page.tsx).
 // The one behavioral change: the real version navigates to the newly
-// created group's public detail page ("/gruppen/:id") on success - that
-// page isn't part of this sanitized bundle, so this version just closes
-// the dialog and lets the (already visible) group list refresh in place.
-export function CreateGroupDialog({ open, onOpenChange, hideTrigger }: { open: boolean; onOpenChange: (o: boolean) => void; hideTrigger?: boolean }) {
+// created group's public detail page ("/gruppen/:id") on success - the
+// partner flow keeps its own list instead, so this version just closes the
+// dialog and lets the (already visible) group list refresh in place.
+// `unavailableMessage`: set on screens without a backend for creating groups
+// (the public /gruppen page) - submitting then explains that instead of saving.
+export function CreateGroupDialog({ open, onOpenChange, hideTrigger, unavailableMessage }: { open: boolean; onOpenChange: (o: boolean) => void; hideTrigger?: boolean; unavailableMessage?: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -105,7 +107,7 @@ export function CreateGroupDialog({ open, onOpenChange, hideTrigger }: { open: b
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
-          <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => createMutation.mutate()} disabled={createMutation.isPending || !form.title || !form.city || !form.location || !form.activityDate || !form.organizerName || !form.organizerEmail}>
+          <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => unavailableMessage ? toast({ title: "Nicht verfügbar", description: unavailableMessage }) : createMutation.mutate()} disabled={createMutation.isPending || !form.title || !form.city || !form.location || !form.activityDate || !form.organizerName || !form.organizerEmail}>
             {createMutation.isPending ? "Erstelle…" : "Gruppe starten"}
           </Button>
         </DialogFooter>

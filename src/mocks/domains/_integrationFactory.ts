@@ -39,7 +39,7 @@ export function registerIntegrationMock(
   registerMock("POST", `/api/admin/partners/:partnerId/${system}/test`, (p) => ({
     success: connectedPartnerIds.has(Number(p.partnerId)),
     message: connectedPartnerIds.has(Number(p.partnerId))
-      ? "Verbindung erfolgreich (Demo)."
+      ? "Verbindung erfolgreich (lokal)."
       : "Keine Zugangsdaten hinterlegt — bitte zuerst konfigurieren.",
   }));
 
@@ -47,7 +47,7 @@ export function registerIntegrationMock(
     registerMock("GET", `/api/admin/${system}/api-info`, () => ({
       system,
       docsUrl: `https://developer.${system}.example/docs`,
-      version: "demo",
+      version: "local",
     }));
   }
 }

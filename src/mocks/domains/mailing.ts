@@ -53,4 +53,4 @@ registerMock("POST", "/api/admin/system-email-templates/:key/preview", (p) => {
   if (!t) throw new MockApiError("Template nicht gefunden", 404);
   return { html: t.bodyHtmlOverride ?? t.defaultBody, subject: t.subjectOverride ?? t.defaultSubject };
 });
-registerMock("POST", "/api/admin/system-email-templates/:key/test-send", () => ({ success: true, message: "Test-E-Mail (Demo) versendet." }));
+registerMock("POST", "/api/admin/system-email-templates/:key/test-send", () => ({ success: true, message: "Test-E-Mail (lokal) versendet." }));

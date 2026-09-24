@@ -17,7 +17,7 @@ const messages = createStore<ChatMessage>([
 ]);
 
 const meetings = createStore<ChatMeeting>([
-  { id: 1, title: "Wöchentliches Standup", description: null, channelId: 1, organizerId: 1, startTime: daysAgo(-1), endTime: daysAgo(-1), location: null, meetingUrl: "https://meet.demo/standup", status: "scheduled", createdAt: daysAgo(20) },
+  { id: 1, title: "Wöchentliches Standup", description: null, channelId: 1, organizerId: 1, startTime: daysAgo(-1), endTime: daysAgo(-1), location: null, meetingUrl: "https://meet.freizeitengel.test/standup", status: "scheduled", createdAt: daysAgo(20) },
 ]);
 
 registerMock("GET", "/api/chat/channels", () => channels.list());
@@ -34,6 +34,6 @@ registerMock("POST", "/api/chat/meetings", (_p, _q, body) => meetings.create({ o
 // The real app also opens a raw WebSocket to /ws/chat as a live-update
 // channel on top of these REST routes. There is no mock WebSocket server
 // here (nothing to connect to client-side) — the page's existing 5s
-// `refetchInterval` polling fallback covers the demo instead; the
+// `refetchInterval` polling fallback covers it instead; the
 // WebSocket simply fails to connect silently, same as any other
 // unreachable-server case the page already has to tolerate.
