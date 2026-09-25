@@ -8,6 +8,7 @@ import { AuthProvider } from "./hooks/use-auth";
 
 import LandingPage from "@/pages/landing-page";
 import AuthPage from "@/pages/auth-page";
+import GoogleAuthCompletePage from "@/pages/google-auth-complete-page";
 import NotFound from "@/pages/not-found";
 
 import AdminLayout from "@/pages/admin/admin-layout";
@@ -71,6 +72,8 @@ function Router() {
       <Route path="/landing" component={() => <LandingPage />} />
 
       <Route path="/auth" component={() => <AuthPage />} />
+      {/* Backend redirects here after Google sign-in (see src/auth/google-auth.ts). */}
+      <Route path="/auth/google/complete" component={() => <GoogleAuthCompletePage />} />
 
       <ProtectedRoute
         path="/admin"

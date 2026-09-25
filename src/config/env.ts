@@ -9,4 +9,10 @@
 export const env = {
   useMockApi: import.meta.env.VITE_USE_MOCK_API === "true",
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? "",
+  /**
+   * Backend path that starts Google sign-in (e.g. /api/auth/google). Empty = Google sign-in is not
+   * configured and the button shows an honest "not set up" message. The backend owns the whole
+   * OAuth flow; the frontend only navigates here and handles the completion redirect.
+   */
+  googleAuthStartPath: import.meta.env.VITE_GOOGLE_AUTH_START_PATH ?? "",
 };

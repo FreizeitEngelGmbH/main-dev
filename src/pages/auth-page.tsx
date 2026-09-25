@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
-import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
-import { homeForRole } from "@/lib/auth-routing";
+import { resolvePostLoginPath } from "@/auth/redirects";
+import { useFirebaseGoogleAuth } from "@/hooks/use-firebase-google-auth";
+import { FirebaseGoogleAccountCard } from "@/components/auth/FirebaseGoogleAccountCard";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/image_1775051923875.png";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -41,16 +43,14 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [, navigate] = useLocation();
-  const { toast } = useToast();
   const { user, loginMutation, registerMutation } = useAuth();
   
   // wouter's location is the path only; the query string (?next=, ?mode=) comes from useSearch().
   const searchParams = new URLSearchParams(useSearch());
   const initialMode = searchParams.get("mode") as "login" | "register" | null;
   const requestedPath = searchParams.get("next");
-  const safeRequestedPath = requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
-    ? requestedPath
-    : null;
+  // Firebase Google account selection preview; separate from the FreizeitEngel server session.
+  const googlePreview = useFirebaseGoogleAuth();
   
   useEffect(() => {
     // Initialize mode from URL parameter if available
@@ -59,13 +59,13 @@ export default function AuthPage() {
     }
   }, [initialMode]);
   
-  // Once signed in, open the dashboard that belongs to the user's role
+  // Once signed in, open the safe `next` route if this role may use it, else the role's dashboard.
   useEffect(() => {
     if (user) {
-      navigate(safeRequestedPath ?? homeForRole(user.role), { replace: true });
+      navigate(resolvePostLoginPath(user.role, requestedPath), { replace: true });
     }
-  }, [user, navigate, safeRequestedPath]);
-  
+  }, [user, navigate, requestedPath]);
+
   // Login form
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -416,18 +416,42 @@ export default function AuthPage() {
             </div>
 
             <div className="mt-6">
-              {/* STATIC: Google sign-in is not connected in this build. */}
+              {googlePreview.user ? (
+                <FirebaseGoogleAccountCard user={googlePreview.user} onSignOut={googlePreview.signOut} />
+              ) : (
               <Button
                 variant="outline"
                 className="w-full"
                 type="button"
-                onClick={() => toast({ title: "Nicht verfügbar", description: "Die Anmeldung mit Google ist noch nicht verfügbar." })}
+                onClick={googlePreview.signIn}
+                disabled={googlePreview.pending}
+                aria-busy={googlePreview.pending}
+                aria-describedby={googlePreview.notice ? "google-auth-notice" : undefined}
+                data-testid="button-google-auth"
               >
-                <svg className="h-5 w-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.907 8.907 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z" />
-                </svg>
-                Mit Google fortfahren
+                {googlePreview.pending ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" aria-hidden="true" />
+                ) : (
+                  <svg className="h-5 w-5 mr-2" aria-hidden="true" viewBox="0 0 48 48">
+                    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
+                    <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
+                    <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
+                    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
+                  </svg>
+                )}
+                {googlePreview.pending ? "Google-Konto wird ausgewählt …" : "Mit Google fortfahren"}
               </Button>
+              )}
+              {googlePreview.notice && (
+                <p
+                  id="google-auth-notice"
+                  data-error-code={googlePreview.notice.code}
+                  role={googlePreview.notice.severity === "error" ? "alert" : "status"}
+                  className={`mt-2 text-sm text-center ${googlePreview.notice.severity === "error" ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  {googlePreview.notice.message}
+                </p>
+              )}
             </div>
           </div>
         </div>
